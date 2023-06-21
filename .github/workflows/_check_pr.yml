@@ -17,7 +17,11 @@ jobs:
       - name: Check
         run: |
           branch=$(echo "${{ github.ref_name }}" | sed -e 's/refs\/heads\///g')
-          files=$(grep -lE "uses: shiipou/github-actions/*@${branch}" .github/workflows/* | grep -vE "(${{ vars.ci_ignored_files }})")
+          ignore_rules=''
+          if [ -n ${{ vars.ci_ignored_files }}" ];then
+            ignore_rules=' | grep -vE "(${{ vars.ci_ignored_files }})"'
+          fi
+          files=$(grep -lE "uses: shiipou/github-actions/*@${branch}" .github/workflows/* ${ignore_rules}")
           if [ -n "$files" ]; then
             echo "The following files contains an action that uses the @${branch} version instead of @main:"
             echo "$files"
