@@ -1,0 +1,35 @@
+name: Increment variable
+
+on:
+  workflow_call:
+    inputs:
+      variable-name:
+        type: string
+        description: 'Name of the variable value to increment'
+        required: true
+      dry-run: 
+        type: boolean
+        description: 'If true, the variable will not be updated'
+        required: false
+        default: false
+    outputs:
+      version:
+        description: The version that was released
+        value: ${{ jobs.increment.outputs.build-number }}
+
+permissions:
+  actions: write
+
+jobs:
+  increment:
+    runs-on: ubuntu-latest
+    outputs:
+      build-number: ${{ steps.get-build-number.outputs.build-number }}
+    steps:
+      - id: get-build-number
+        name: Get build number
+        uses: shiipou/github-actions/jobs/increment-variable@main
+        with:
+          variable-name: ${{ github.event.inputs.variable-name }}
+          dry-run: ${{ github.event.inputs.dry-run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

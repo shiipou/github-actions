@@ -1,0 +1,41 @@
+name: get-version
+description: Find the version of the next release
+author: shiipou
+branding:
+  color: green
+  icon: tag
+
+inputs:
+  release-branches:
+    type: string
+    description: The branches on which releases should happen, comma separated name of branches
+    required: false
+    default: 'main'
+  prerelease-branches:
+    type: string
+    description: The branches on which prereleases should happen, comma separated name of branches
+    required: false
+    default: 'rc,beta,alpha'
+
+outputs:
+  version:
+    description: "The next version discovered by conventional commits"
+    value: ${{ steps.get-version.outputs.VERSION }}
+  changelogs:
+    description: "The changelogs generated from conventional commits"
+    value: ${{ steps.get-version.outputs.CHANGELOG }}
+  is-prerelease:
+    description: "Whether the next version is a prerelease or not"
+    value: ${{ steps.get-version.outputs.IS_PRE_RELEASE }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: get-version
+      name: Get version
+      uses: shiipou/sem-version@beta
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        RELEASE_BRANCHES_REGEX: ${{ inputs.release-branches }}
+        PRERELEASE_BRANCHES_REGEX: ${{ inputs.prerelease-branches }}

@@ -1,0 +1,13 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - rc
+      - beta
+      - alpha
+
+jobs:
+  release:
+    uses: shiipou/github-actions/.github/workflows/release.yml@main

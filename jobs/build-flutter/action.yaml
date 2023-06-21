@@ -1,0 +1,106 @@
+name: Flutter Build
+description: 'Build a Flutter app'
+author: shiipou
+branding:
+  color: blue
+  icon: package
+
+inputs:
+  version:
+    description: 'The version of the app to build'
+    required: true
+  build:
+    description: 'The build number of the app to build'
+    required: false
+    default: ''
+  targets:
+    description: 'Comma separated list of targets to build'
+    required: true
+  platform:
+    description: 'The platform to use to build targets'
+    required: true
+  flutter-extra-args:
+    description: 'Extra arguments to pass to the flutter build command'
+    required: false
+    default: ''
+  flutter-channel:
+    description: 'The release channel of Flutter to use for building'
+    required: false
+    default: 'stable'
+  flutter-version:
+    description: 'The version of Flutter to use for building'
+    required: false
+    default: 'any'
+
+runs:
+  using: "composite"
+  steps:
+  - id: check-flutter-path
+    name: Check flutter installation
+    continue-on-error: true
+    uses: actions/github-script@v6
+    with:
+      result-encoding: string
+      script: |
+        const flutterPath: string = await io.which('flutter', true)
+        return flutterPath
+  
+  - name: Setup Flutter Environment
+    if: steps.check-flutter-path.outputs.result == ''
+    uses: subosito/flutter-action@v2.10.0
+    with:
+      channel: ${{ inputs.flutter-version }}
+      flutter-version: ${{ inputs.flutter-version }}
+      cache: true
+      cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
+      cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+
+  - name: Install Dependencies (windows)
+    shell: pwsh
+    if: ${{ runner.os == 'Windows' }}
+    run: |
+      flutter config --enable-windows-desktop
+
+  - name: Install Dependencies (linux)
+    shell: sh
+    if: ${{ runner.os == 'Linux' }}
+    run: |
+      sudo apt-get update -y
+      sudo apt-get install -y make cmake ninja-build libgtk-3-dev locate libfuse2
+      flutter config --enable-linux-desktop
+      wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+      chmod +x appimagetool
+      mv appimagetool /usr/local/bin/
+
+  - name: Install Dependencies (macos)
+    shell: sh
+    if: ${{ runner.os == 'macOS' }}
+    run: |
+      flutter config --enable-macos-desktop
+
+  - name: Update version
+    uses: actions/github-script@v6
+    with:
+      script: |
+        // Update pubspec.yaml inplace
+        const fs = require('fs')
+        const path = require('path')
+        const pubspecPath = path.join(process.env.GITHUB_WORKSPACE, 'pubspec.yaml')
+        // edit version and build number
+        const pubspec = fs.readFileSync(pubspecPath, 'utf8')
+        const version = '${{ inputs.version }}'
+        const build = '${{ inputs.build }}'
+        let version_string = ''
+        if (build.length > 0) {
+          version_string = `${version}+${build}`
+        } else {
+          version_string = `${version}`
+        }
+        const newPubspec = pubspec.replace(/version: .*/, `version: ${version_string}`)
+        fs.writeFileSync(pubspecPath, newPubspec)
+
+  - name: Build
+    shell: sh
+    run: |
+      flutter pub global activate flutter_distributor
+      flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}

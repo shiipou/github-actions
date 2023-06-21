@@ -1,0 +1,86 @@
+name: Build Flutter
+
+on:
+  workflow_call:
+    inputs:
+      package-name:
+        type: string
+        description: 'Name of the package to deploy'
+        required: true
+      version:
+        type: string
+        description: 'Version of the package to deploy'
+        required: true
+      build:
+        type: string
+        description: 'Build number of the package to deploy'
+        required: true
+      flutter-version:
+        type: string
+        description: 'Version of Flutter to use'
+        required: false
+        default: '3.x.x'
+    secrets:
+      uploadKeyStore:
+        description: The keystore file to sign the app
+        required: false
+      uploadKeyName:
+        description: The name of the key to sign the app
+        required: false
+      uploadKeyPassword:
+        description: The password of the key to sign the app
+        required: false
+      serviceAccountJsonPlainText:
+        description: The token that'll authentificate the user to the Google Playstore API to create new release
+        required: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      matrix:
+        platform: [ web, windows, linux, macos, android, ios ]
+        include:
+          - platform: web
+            targets: zip
+            runner: ubuntu-latest
+            artifacts: dist/web/*.zip
+          - platform: linux
+            targets: zip,deb,rpm,appimage
+            runner: ubuntu-latest
+            artifacts: dist/linux/*.{zip,deb,rpm,AppImage}
+          - platform: android
+            targets: apk,aab
+            runner: ubuntu-latest
+            artifacts: dist/android/*.{apk,aab}
+          - platform: windows
+            targets: zip,exe,msix
+            runner: windows-latest
+            artifacts: dist/windows/*.{zip,exe,msix}
+          - platform: macos
+            targets: zip,dmg
+            runner: macos-latest
+            artifacts: dist/macos/*.{zip,dmg}
+          - platform: ios
+            targets: ipa
+            runner: macos-latest
+            artifacts: dist/ios/*.ipa
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Build
+        uses: shiipou/github-actions/jobs/build-flutter@main
+        with:
+          version: ${{ inputs.version }}
+          build: ${{ inputs.build }}
+          platform: ${{ matrix.platform }}
+          targets: ${{ matrix.targets }}
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.platform }}
+          path: ${{ matrix.artifacts }}

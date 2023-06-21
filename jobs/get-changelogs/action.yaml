@@ -1,0 +1,34 @@
+name: get-changelogs
+description: Read the changelogs from a release
+author: shiipou
+branding:
+  color: green
+  icon: tag
+
+inputs:
+  release:
+    description: 'The version to release to read the changelogs'
+    required: true
+
+outputs:
+  changelogs:
+    description: "The changelogs read from the repository"
+    value: ${{ steps.get-changelogs.outputs.result }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: get-changelogs
+        name: Get ChangeLogs
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const version = "${{ inputs.release }}"
+            const release = github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: version
+            })
+            const changelogs = release.data.body
+            return changelogs

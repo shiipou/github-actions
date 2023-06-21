@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      release-branches:
+        type: string
+        description: The branches on which releases should happen, comma separated name of branches
+        required: false
+        default: 'main'
+      prerelease-branches:
+        type: string
+        description: The branches on which prereleases should happen, comma separated name of branches
+        required: false
+        default: 'rc,beta,alpha'
+      download-artifacts:
+        type: boolean
+        description: Whether to download artifacts from previous jobs. If true, the artifacts will be downloaded in the `artifacts/` folder
+        required: false
+        default: false
+      assets:
+        type: string
+        description: The assets to upload
+        required: false
+        default: ''
+    outputs:
+      version:
+        description: The version of the release
+        value: ${{ jobs.release.outputs.VERSION }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.VERSION }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Downlaod artifacts
+        if: ${{ inputs.download-artifacts == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - id: get-version
+        name: Get version
+        uses: shiipou/github-actions/jobs/get-version@main
+        with:
+          release-branches: ${{ inputs.release-branches }}
+          prerelease-branches: ${{ inputs.prerelease-branches }}
+      
+      - name: Release
+        uses: shiipou/github-actions/jobs/release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: ${{ steps.get-version.outputs.version }}
+          changelogs: ${{ steps.get-version.outputs.changelogs }}
+          pre-release: ${{ steps.get-version.outputs.is-prerelease }}
+          assets: ${{ inputs.assets }}

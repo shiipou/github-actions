@@ -1,0 +1,39 @@
+name: release
+description: Release a new version of the project
+author: shiipou
+branding:
+  color: green
+  icon: tag
+
+inputs:
+  version:
+    description: 'The version to release'
+    required: true
+  changelogs:
+    description: 'The changelogs to include in the release'
+    required: false
+    default: ''
+  pre-release:
+    description: 'Whether to release a pre-release or not'
+    required: false
+    default: 'false'
+  assets:
+    description: 'The path to the assets to upload with the release'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        changelog_file=$(mktemp)
+        echo "${{ inputs.changelogs }}" >> "$changelog_file"
+
+        ARGS="--repo ${{ github.repository }} --target ${{ github.sha }} -F $changelog_file"
+        if ${{ inputs.pre-release }}; then
+          ARGS="$ARGS --prerelease"
+        fi
+        gh release create $ARGS v${{ needs.sem-version.outputs.VERSION }} ${{ inputs.assets }}

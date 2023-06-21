@@ -1,2 +1,2 @@
-# github_actions
-GitHub Repository to re-use workflows for all our repositories
+# github-actions
+GitHub Repository to re-use workflows in all of my repositories

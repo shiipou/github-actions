@@ -1,0 +1,71 @@
+name: increment-variable
+description: Get the next build number for the current build
+author: shiipou
+branding:
+  color: orange
+  icon: tag
+
+inputs:
+  variable-name:
+    description: 'Name of the variable value to increment'
+    required: true
+  github-token:
+    description: "The github token to use to get the current build number"
+    required: true
+  dry-run:
+    description: "Whether the build-number will be increment or not"
+    required: false
+    default: 'false'
+outputs:
+  build-number:
+    description: "The next build number to build"
+    value: ${{ steps.get-build-number.outputs.result }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: increment-variable
+      name: Increment Variable
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ input.github-token }}
+        result-encoding: string
+        script: |
+          const var_name = 'BUILD_NUMBER'
+          // Get current build number from github variables
+          core.debug(`var_name=${var_name}`)
+          let value = github.rest.actions.getRepoVariable({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: var_name
+          })
+          core.debug(`old_value=${value}`)
+          if (!buildNumber) {
+            core.debug(`value didn't exist, creating it to 1`)
+            buildNumber=1
+            if (inputs.dry-run == 'false') {
+              github.rest.actions.createRepoVariable({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: var_name,
+                value: buildNumber
+              })
+            }
+            core.debug(`value=${value}`)
+            return buildNumber
+          }
+
+          buildNumber = parseInt(buildNumber) + 1
+
+          core.debug(`value=${value}`)
+
+          if (inputs.dry-run == 'false') {
+            github.rest.actions.updateRepoVariable({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: var_name,
+              value: buildNumber
+            })
+          }
+
+          return buildNumber
