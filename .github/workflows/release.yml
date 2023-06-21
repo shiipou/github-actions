@@ -28,6 +28,9 @@ on:
         description: The version of the release
         value: ${{ jobs.release.outputs.VERSION }}
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -47,15 +50,15 @@ jobs:
         name: Get version
         uses: shiipou/github-actions/jobs/get-version@main
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           release-branches: ${{ inputs.release-branches }}
           prerelease-branches: ${{ inputs.prerelease-branches }}
       
       - name: Release
         uses: shiipou/github-actions/jobs/release@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           version: ${{ steps.get-version.outputs.version }}
           changelogs: ${{ steps.get-version.outputs.changelogs }}
           pre-release: ${{ steps.get-version.outputs.is-prerelease }}
           assets: ${{ inputs.assets }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

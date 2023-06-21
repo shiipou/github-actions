@@ -17,6 +17,10 @@ on:
       version:
         description: The version that was released
         value: ${{ jobs.get-version.outputs.version }}
+
+permissions:
+  contents: read
+
 jobs:
   get-version:
     runs-on: ubuntu-latest
@@ -28,9 +32,7 @@ jobs:
       
       - id: get-version
         name: Release
-        uses: shiipou/github-action/jobs/get-version@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shiipou/github-actions/jobs/get-version@main
         with:
-          RELEASE_BRANCHES_REGEX: ${{ inputs.release-branches }}
-          PRERELEASE_BRANCHES_REGEX: ${{ inputs.prerelease-branches }}
+          release-branches: ${{ inputs.release-branches }}
+          prerelease-branches: ${{ inputs.prerelease-branches }}

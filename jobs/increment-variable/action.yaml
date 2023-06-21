@@ -9,9 +9,6 @@ inputs:
   variable-name:
     description: 'Name of the variable value to increment'
     required: true
-  github-token:
-    description: "The github token to use to get the current build number"
-    required: true
   dry-run:
     description: "Whether the build-number will be increment or not"
     required: false
@@ -28,7 +25,6 @@ runs:
       name: Increment Variable
       uses: actions/github-script@v6
       with:
-        github-token: ${{ input.github-token }}
         result-encoding: string
         script: |
           const var_name = 'BUILD_NUMBER'

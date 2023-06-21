@@ -6,6 +6,9 @@ branding:
   icon: tag
 
 inputs:
+  github-token:
+    description: 'The GitHub token to use to authenticate to the GitHub API'
+    required: true
   release-branches:
     type: string
     description: The branches on which releases should happen, comma separated name of branches
@@ -35,7 +38,7 @@ runs:
       name: Get version
       uses: shiipou/sem-version@beta
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         RELEASE_BRANCHES_REGEX: ${{ inputs.release-branches }}
         PRERELEASE_BRANCHES_REGEX: ${{ inputs.prerelease-branches }}
