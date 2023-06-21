@@ -50,6 +50,7 @@ jobs:
         name: Get version
         uses: shiipou/github-actions/jobs/get-version@main
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           release-branches: ${{ inputs.release-branches }}
           prerelease-branches: ${{ inputs.prerelease-branches }}
       
@@ -60,3 +61,4 @@ jobs:
           changelogs: ${{ steps.get-version.outputs.changelogs }}
           pre-release: ${{ steps.get-version.outputs.is-prerelease }}
           assets: ${{ inputs.assets }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

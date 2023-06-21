@@ -21,13 +21,16 @@ inputs:
     description: 'The path to the assets to upload with the release'
     required: false
     default: ''
+  github-token:
+    description: 'The GitHub token to use to authenticate to the GitHub API'
+    required: true
 
 runs:
   using: "composite"
   steps:
     - name: Release
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         changelog_file=$(mktemp)
         echo "${{ inputs.changelogs }}" >> "$changelog_file"
