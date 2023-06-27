@@ -37,7 +37,7 @@ runs:
         echo "${{ inputs.changelogs }}" >> "$changelog_file"
 
         ARGS="--repo ${{ github.repository }} --target ${{ github.sha }} -F $changelog_file"
-        if ${{ inputs.pre-release }}; then
+        if [ "${{ inputs.pre-release }}" == "true" ]; then
           ARGS="$ARGS --prerelease"
         fi
         gh release create $ARGS v${{ inputs.version }} ${{ inputs.assets }}
