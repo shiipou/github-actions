@@ -17,6 +17,12 @@ on:
       version:
         description: The version that was released
         value: ${{ jobs.get-version.outputs.version }}
+      is-prerelease:
+        description: The version that was released
+        value: ${{ jobs.get-version.outputs.is-prerelease }}
+      changelogs:
+        description: The version that was released
+        value: ${{ jobs.get-version.outputs.changelogs }}
 
 permissions:
   contents: read
@@ -25,7 +31,9 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.VERSION }}
+      version: ${{ steps.get-version.outputs.version }}
+      is-prerelease: ${{ steps.get-version.outputs.is-prerelease }}
+      changelogs: ${{ steps.get-version.outputs.changelogs }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
