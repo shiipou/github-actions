@@ -3,16 +3,20 @@ name: Release
 on:
   workflow_call:
     inputs:
-      release-branches:
+      version:
         type: string
-        description: The branches on which releases should happen, comma separated name of branches
-        required: false
-        default: 'main'
-      prerelease-branches:
+        description: 'The version to release'
+        required: true
+      changelogs:
         type: string
-        description: The branches on which prereleases should happen, comma separated name of branches
+        description: 'The changelogs to include in the release'
         required: false
-        default: 'rc,beta,alpha'
+        default: ''
+      is-prerelease:
+        type: boolean
+        description: 'Whether to release a pre-release or not'
+        required: false
+        default: false
       download-artifacts:
         type: boolean
         description: Whether to download artifacts from previous jobs. If true, the artifacts will be downloaded in the `artifacts/` folder
@@ -41,24 +45,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Downlaod artifacts
-        if: ${{ inputs.download-artifacts == 'true' }}
+        if: ${{ inputs.download-artifacts }}
         uses: actions/download-artifact@v3
         with:
           path: artifacts/
-
-      - id: get-version
-        name: Get version
-        uses: shiipou/github-actions/jobs/get-version@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branches: ${{ inputs.release-branches }}
-          prerelease-branches: ${{ inputs.prerelease-branches }}
       
       - name: Release
         uses: shiipou/github-actions/jobs/release@main
         with:
-          version: ${{ steps.get-version.outputs.version }}
-          changelogs: ${{ steps.get-version.outputs.changelogs }}
-          pre-release: ${{ steps.get-version.outputs.is-prerelease }}
+          version: ${{ inputs.version }}
+          changelogs: ${{ inputs.changelogs }}
+          pre-release: ${{ inputs.is-prerelease }}
           assets: ${{ inputs.assets }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
