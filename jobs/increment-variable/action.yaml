@@ -31,7 +31,7 @@ runs:
         github-token: ${{ inputs.github-token }}
         result-encoding: string
         script: |
-          const var_name = 'BUILD_NUMBER'
+          const var_name = '${{ inputs.variable-name }}'
           // Get current build number from github variables
           core.debug(`var_name=${var_name}`)
           let value = await github.request('GET /repos/{owner}/{repo}/actions/variables/{name}', {
