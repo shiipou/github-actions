@@ -57,7 +57,7 @@ runs:
                 }
               })
             }
-            core.debug(`value=${value}`)
+            core.debug(`value=${buildNumber}`)
             return buildNumber
           }
 
