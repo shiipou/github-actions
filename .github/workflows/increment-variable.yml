@@ -28,7 +28,7 @@ jobs:
     steps:
       - id: get-build-number
         name: Get build number
-        uses: shiipou/github-actions/jobs/increment-variable@main
+        uses: shiipou/github-actions/jobs/increment-variable@1-fix-flutter-release-didnt-work
         with:
           variable-name: ${{ github.event.inputs.variable-name }}
           dry-run: ${{ github.event.inputs.dry-run }}
