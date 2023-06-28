@@ -12,13 +12,11 @@ on:
         description: 'If true, the variable will not be updated'
         required: false
         default: false
+
     outputs:
       value:
         description: The new value of the variable
         value: ${{ jobs.increment.outputs.build-number }}
-
-permissions:
-  repository-projects: write
 
 jobs:
   increment:
