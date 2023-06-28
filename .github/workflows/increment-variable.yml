@@ -18,7 +18,7 @@ on:
         value: ${{ jobs.increment.outputs.build-number }}
 
 permissions:
-  actions: write
+  repository-projects: write
 
 jobs:
   increment:
