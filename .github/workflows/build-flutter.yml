@@ -92,11 +92,11 @@ jobs:
         with:
           version: ${{ inputs.version }}
           build: ${{ inputs.build }}
-          platform: ${{ matrix.platform }}
-          targets: ${{ matrix.targets }}
+          platform: ${{ inputs.platform }}
+          targets: ${{ inputs.targets }}
       
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.platform }}
-          path: ${{ matrix.artifacts }}
+          name: ${{ inputs.platform }}
+          path: ${{ inputs.artifacts }}
