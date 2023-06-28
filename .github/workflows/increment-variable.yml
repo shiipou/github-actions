@@ -13,7 +13,7 @@ on:
         required: false
         default: false
     secrets:
-      GITHUB_TOKEN:
+      token:
         description: 'Override the github token'
         required: false
     outputs:
@@ -33,4 +33,4 @@ jobs:
         with:
           variable-name: ${{ github.event.inputs.variable-name }}
           dry-run: ${{ github.event.inputs.dry-run }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.token }}
