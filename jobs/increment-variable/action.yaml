@@ -12,7 +12,7 @@ inputs:
   dry-run:
     description: "Whether the build-number will be increment or not"
     required: false
-    default: 'false'
+    default: false
   github-token:
     description: "Github token to use to update the variable"
     required: true
