@@ -45,7 +45,7 @@ runs:
           if (!value) {
             core.debug(`value didn't exist, creating it to 1`)
             value=1
-            if ('${{ inputs.dry-run }}' == 'false') {
+            if ('${{ inputs.dry-run }}' != 'true') {
               await github.request('POST /repos/{owner}/{repo}/actions/variables', {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -64,7 +64,7 @@ runs:
 
           core.debug(`value=${value}`)
 
-          if ('${{ inputs.dry-run }}' == 'false') {
+          if ('${{ inputs.dry-run }}' != 'true') {
             await github.request('PATCH /repos/{owner}/{repo}/actions/variables/{name}', {
               owner: context.repo.owner,
               repo: context.repo.repo,
