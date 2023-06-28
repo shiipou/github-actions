@@ -12,7 +12,10 @@ on:
         description: 'If true, the variable will not be updated'
         required: false
         default: false
-
+    secrets:
+      GITHUB_TOKEN:
+        description: 'Override the github token'
+        required: false
     outputs:
       value:
         description: The new value of the variable
