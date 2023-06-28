@@ -103,4 +103,4 @@ runs:
     shell: sh
     run: |
       flutter pub global activate flutter_distributor
-      flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
+      flutter pub global run flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
