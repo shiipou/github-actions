@@ -42,7 +42,7 @@ runs:
               'X-GitHub-Api-Version': '2022-11-28'
             }
           }).catch(_=> null)
-          core.debug(`old_value=${value}`)
+          core.debug(`old_value=${buildNumber}`)
           if (!buildNumber) {
             core.debug(`value didn't exist, creating it to 1`)
             buildNumber=1
