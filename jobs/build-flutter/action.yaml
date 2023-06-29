@@ -44,6 +44,12 @@ runs:
       script: |
         return await io.which('flutter', true)
   
+  - name: Setup node
+    if: ${{ runner.os == 'macOS' }}
+    uses: actions/setup-node@v3
+    with:
+      node-version: 18
+  
   - name: Setup Flutter Environment
     if: steps.check-flutter-path.outputs.result == ''
     uses: subosito/flutter-action@v2.10.0
@@ -76,6 +82,7 @@ runs:
     if: ${{ runner.os == 'macOS' }}
     run: |
       flutter config --enable-macos-desktop
+      npm install -g appdmg
 
   - name: Update version
     uses: actions/github-script@v6
