@@ -29,7 +29,10 @@ outputs:
     value: ${{ steps.get-version.outputs.changelogs }}
   is-prerelease:
     description: "Whether the next version is a prerelease or not"
-    value: ${{ steps.get-version.outputs.is-prerelease }}
+    value: ${{ steps.get-version.outputs.is-prerelease == 'true' }}
+  will-release:
+    description: "Whether the next version is a prerelease or not"
+    value: ${{ steps.get-version.outputs.will-release == 'true' }}
 
 runs:
   using: "composite"
