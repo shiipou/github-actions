@@ -27,10 +27,6 @@ on:
         description: The assets to upload
         required: false
         default: ''
-    outputs:
-      version:
-        description: The version of the release
-        value: ${{ jobs.release.outputs.VERSION }}
 
 permissions:
   contents: write
@@ -38,8 +34,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.VERSION }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -51,7 +45,7 @@ jobs:
           path: artifacts/
       
       - name: Release
-        uses: shiipou/github-actions/jobs/release@main
+        uses: shiipou/github-actions/jobs/release@1-fix-flutter-release-didnt-work
         with:
           version: ${{ inputs.version }}
           changelogs: ${{ inputs.changelogs }}
