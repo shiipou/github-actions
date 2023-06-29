@@ -15,11 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check
+        env:
+          IGNORED_FILES: "${{ vars.ci_ignored_files }}"
         run: |
           branch=$(echo "${{ github.ref_name }}" | sed -e 's/refs\/heads\///g')
           ignore_rules=''
-          if [ -n "${{ vars.ci_ignored_files }}" ]; then
-            ignore_rules=' | grep -vE "(${{ vars.ci_ignored_files }})"'
+          if [ -n "$IGNORED_FILES" ]; then
+            ignore_rules=' | grep -vE "($IGNORED_FILES)"'
           fi
           files=$(grep -lE "uses: shiipou/github-actions/*@${branch}" .github/workflows/* ${ignore_rules}")
           if [ -n "$files" ]; then
