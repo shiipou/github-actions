@@ -65,7 +65,6 @@ runs:
     if: ${{ runner.os == 'Windows' }}
     run: |
       flutter config --enable-windows-desktop
-      echo "$env:PUB_CACHE\bin" >> "$GITHUB_PATH"
 
   - name: Install Dependencies (linux)
     shell: sh
