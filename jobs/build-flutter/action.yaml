@@ -114,7 +114,7 @@ runs:
       
   - name: Build (Linux/MacOS)
     shell: sh
-    if: ${{ runner.os == 'Windows' }}
+    if: ${{ runner.os != 'Windows' }}
     run: |
       dart pub global activate flutter_distributor
       flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
