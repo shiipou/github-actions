@@ -110,5 +110,4 @@ runs:
     shell: sh
     run: |
       dart pub global activate flutter_distributor
-      dart pub global list
-      flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
+      $PUB_CACHE/bin/flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
