@@ -41,7 +41,7 @@ runs:
         if ${{ inputs.pre-release }} ; then
           ARGS="$ARGS --prerelease"
         fi
-        ls -lia artifacts/*/*
-        ls -lia artifacts/*/*/*
+        
+        ls -lia "${{ inputs.assets }}"
         
         gh release create $ARGS "v${{ inputs.version }}" "${{ inputs.assets }}"
