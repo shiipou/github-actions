@@ -32,9 +32,10 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        CHANGELOGS: ${{ inputs.changelogs }}
       run: |
         changelog_file=$(mktemp)
-        echo "${{ inputs.changelogs }}" >> "$changelog_file"
+        echo "${CHANGELOGS}" >> "$changelog_file"
 
         ARGS="--repo '${{ github.repository }}' --target '${{ github.sha }}' -F '$changelog_file'"
         if ${{ inputs.pre-release }} ; then
