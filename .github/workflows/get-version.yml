@@ -7,12 +7,12 @@ on:
         type: string
         description: The branches on which releases should happen, comma separated name of branches
         required: false
-        default: 'main'
+        default: '^(main)$'
       prerelease-branches:
         type: string
         description: The branches on which prereleases should happen, comma separated name of branches
         required: false
-        default: 'rc,beta,alpha'
+        default: '^(rc|beta|alpha)$'
     outputs:
       version:
         description: The version that was released
