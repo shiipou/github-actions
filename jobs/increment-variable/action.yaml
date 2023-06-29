@@ -40,8 +40,11 @@ runs:
             headers: {
               'X-GitHub-Api-Version': '2022-11-28'
             }
-          }).then(data => data.json())
-          .then(data=>data.value)
+          }).then(response => response.json())
+          .then(data=>{
+            core.debug(data)
+            return data.value
+          })
           .catch(_=> null)
           core.debug(`old_value=${value}`)
           if (!value) {
