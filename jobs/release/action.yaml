@@ -36,8 +36,8 @@ runs:
         changelog_file=$(mktemp)
         echo "${{ inputs.changelogs }}" >> "$changelog_file"
 
-        ARGS="--repo ${{ github.repository }} --target ${{ github.sha }} -F $changelog_file"
-        if ${{ inputs.pre-release }}; then
+        ARGS="--repo '${{ github.repository }}' --target '${{ github.sha }}' -F '$changelog_file'"
+        if ${{ inputs.pre-release }} ; then
           ARGS="$ARGS --prerelease"
         fi
-        gh release create $ARGS v${{ inputs.version }} ${{ inputs.assets }}
+        gh release create $ARGS "v${{ inputs.version }}" "${{ inputs.assets }}"
