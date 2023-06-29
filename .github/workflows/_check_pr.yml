@@ -18,7 +18,7 @@ jobs:
         run: |
           branch=$(echo "${{ github.ref_name }}" | sed -e 's/refs\/heads\///g')
           ignore_rules=''
-          if [ -n ${{ vars.ci_ignored_files }}" ];then
+          if [ -n "${{ vars.ci_ignored_files }}" ]; then
             ignore_rules=' | grep -vE "(${{ vars.ci_ignored_files }})"'
           fi
           files=$(grep -lE "uses: shiipou/github-actions/*@${branch}" .github/workflows/* ${ignore_rules}")
