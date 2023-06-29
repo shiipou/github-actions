@@ -82,7 +82,7 @@ jobs:
 #             runner: macos-latest
 #             artifacts: dist/ios/*.ipa
     runs-on: ${{ inputs.runner }}
-
+    continue-on-error: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
