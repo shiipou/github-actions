@@ -36,7 +36,7 @@ runs:
   steps:
     - id: get-version
       name: Get version
-      uses: shiipou/sem-version@beta
+      uses: shiipou/sem-version@stable
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
