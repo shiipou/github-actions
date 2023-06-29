@@ -19,16 +19,16 @@ on:
     outputs:
       value:
         description: The new value of the variable
-        value: ${{ jobs.increment.outputs.build-number }}
+        value: ${{ jobs.increment.outputs.value }}
 
 jobs:
   increment:
     runs-on: ubuntu-latest
     outputs:
-      build-number: ${{ steps.get-build-number.outputs.build-number }}
+      value: ${{ steps.increment.outputs.value }}
     steps:
-      - id: get-build-number
-        name: Get build number
+      - id: increment
+        name: Increment
         uses: shiipou/github-actions/jobs/increment-variable@1-fix-flutter-release-didnt-work
         with:
           variable-name: ${{ inputs.variable-name }}
