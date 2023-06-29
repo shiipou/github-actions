@@ -23,6 +23,9 @@ on:
       changelogs:
         description: The version that was released
         value: ${{ jobs.get-version.outputs.changelogs }}
+      will-release:
+        description: The version will be released
+        value: ${{ jobs.get-version.outputs.will-release }}
 
 permissions:
   contents: read
@@ -34,6 +37,7 @@ jobs:
       version: ${{ steps.get-version.outputs.version }}
       is-prerelease: ${{ steps.get-version.outputs.is-prerelease }}
       changelogs: ${{ steps.get-version.outputs.changelogs }}
+      will-release: ${{ steps.get-version.outputs.will-release }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
