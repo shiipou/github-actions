@@ -65,6 +65,7 @@ runs:
     if: ${{ runner.os == 'Windows' }}
     run: |
       flutter config --enable-windows-desktop
+      $env:Path += ';%LOCALAPPDATA%\Pub\Cache\bin'
 
   - name: Install Dependencies (linux)
     shell: sh
