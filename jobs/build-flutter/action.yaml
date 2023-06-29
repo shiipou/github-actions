@@ -42,8 +42,7 @@ runs:
     with:
       result-encoding: string
       script: |
-        const flutterPath: string = await io.which('flutter', true)
-        return flutterPath
+        return await io.which('flutter', true)
   
   - name: Setup Flutter Environment
     if: steps.check-flutter-path.outputs.result == ''
