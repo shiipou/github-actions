@@ -65,7 +65,7 @@ runs:
     if: ${{ runner.os == 'Windows' }}
     run: |
       flutter config --enable-windows-desktop
-      $env:Path += ';%LOCALAPPDATA%\Pub\Cache\bin'
+      echo "%LOCALAPPDATA%\Pub\Cache\bin" >> "$GITHUB_PATH"
 
   - name: Install Dependencies (linux)
     shell: sh
@@ -109,5 +109,5 @@ runs:
   - name: Build
     shell: sh
     run: |
-      dart pub global activate flutter_distributor
-      dart pub global run flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
+      flutter pub global activate flutter_distributor
+      flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
