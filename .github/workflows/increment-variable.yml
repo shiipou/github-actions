@@ -7,7 +7,7 @@ on:
         type: string
         description: 'Name of the variable value to increment'
         required: true
-      dry-run: 
+      dry-run:
         type: boolean
         description: 'If true, the variable will not be updated'
         required: false
@@ -29,7 +29,7 @@ jobs:
     steps:
       - id: increment
         name: Increment
-        uses: shiipou/github-actions/jobs/increment-variable@1-fix-flutter-release-didnt-work
+        uses: shiipou/github-actions/jobs/increment-variable@main
         with:
           variable-name: ${{ inputs.variable-name }}
           dry-run: ${{ inputs.dry-run }}

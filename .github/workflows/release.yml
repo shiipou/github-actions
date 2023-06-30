@@ -43,9 +43,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts/
-      
+
       - name: Release
-        uses: shiipou/github-actions/jobs/release@1-fix-flutter-release-didnt-work
+        uses: shiipou/github-actions/jobs/release@main
         with:
           version: ${{ inputs.version }}
           changelogs: ${{ inputs.changelogs }}

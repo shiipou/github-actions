@@ -20,7 +20,7 @@ on:
         description: 'Version of Flutter to use'
         required: false
         default: '3.x.x'
-      platform: 
+      platform:
         type: string
         description: 'Platform where to build the app (linux,android,...)'
         required: true
@@ -28,11 +28,11 @@ on:
         type: string
         description: 'Target file extension to build (exe,apk,...)'
         required: true
-      runner: 
+      runner:
         type: string
         description: 'The runner to use to build the app (ubuntu-latest, ....)'
         required: true
-      artifacts: 
+      artifacts:
         type: string
         description: 'Path to the artifacts build by the action (dist/macos/*.{zip,dmg})'
         required: true
@@ -86,15 +86,15 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      
+
       - name: Build
-        uses: shiipou/github-actions/jobs/build-flutter@1-fix-flutter-release-didnt-work
+        uses: shiipou/github-actions/jobs/build-flutter@main
         with:
           version: ${{ inputs.version }}
           build: ${{ inputs.build }}
           platform: ${{ inputs.platform }}
           targets: ${{ inputs.targets }}
-      
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:

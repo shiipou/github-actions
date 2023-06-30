@@ -41,10 +41,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      
+
       - id: get-version
         name: Release
-        uses: shiipou/github-actions/jobs/get-version@1-fix-flutter-release-didnt-work
+        uses: shiipou/github-actions/jobs/get-version@main
         with:
           release-branches: ${{ inputs.release-branches }}
           prerelease-branches: ${{ inputs.prerelease-branches }}
