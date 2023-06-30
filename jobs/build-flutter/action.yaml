@@ -42,8 +42,13 @@ runs:
     with:
       result-encoding: string
       script: |
-        const flutterPath: string = await io.which('flutter', true)
-        return flutterPath
+        return await io.which('flutter', true)
+  
+  - name: Setup node
+    if: ${{ runner.os == 'macOS' }}
+    uses: actions/setup-node@v3
+    with:
+      node-version: 18
   
   - name: Setup Flutter Environment
     if: steps.check-flutter-path.outputs.result == ''
@@ -77,6 +82,7 @@ runs:
     if: ${{ runner.os == 'macOS' }}
     run: |
       flutter config --enable-macos-desktop
+      npm install -g appdmg
 
   - name: Update version
     uses: actions/github-script@v6
@@ -99,8 +105,16 @@ runs:
         const newPubspec = pubspec.replace(/version: .*/, `version: ${version_string}`)
         fs.writeFileSync(pubspecPath, newPubspec)
 
-  - name: Build
+  - name: Build (Windows)
     shell: sh
+    if: ${{ runner.os == 'Windows' }}
     run: |
-      flutter pub global activate flutter_distributor
+      dart pub global activate flutter_distributor
+      flutter_distributor.bat package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
+      
+  - name: Build (Linux/MacOS)
+    shell: sh
+    if: ${{ runner.os != 'Windows' }}
+    run: |
+      dart pub global activate flutter_distributor
       flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}

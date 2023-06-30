@@ -7,16 +7,25 @@ on:
         type: string
         description: The branches on which releases should happen, comma separated name of branches
         required: false
-        default: 'main'
+        default: '^(main)$'
       prerelease-branches:
         type: string
         description: The branches on which prereleases should happen, comma separated name of branches
         required: false
-        default: 'rc,beta,alpha'
+        default: '^(rc|beta|alpha)$'
     outputs:
       version:
         description: The version that was released
         value: ${{ jobs.get-version.outputs.version }}
+      is-prerelease:
+        description: The version that was released
+        value: ${{ jobs.get-version.outputs.is-prerelease }}
+      changelogs:
+        description: The version that was released
+        value: ${{ jobs.get-version.outputs.changelogs }}
+      will-release:
+        description: The version will be released
+        value: ${{ jobs.get-version.outputs.will-release }}
 
 permissions:
   contents: read
@@ -25,11 +34,14 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.VERSION }}
+      version: ${{ steps.get-version.outputs.version }}
+      is-prerelease: ${{ steps.get-version.outputs.is-prerelease }}
+      changelogs: ${{ steps.get-version.outputs.changelogs }}
+      will-release: ${{ steps.get-version.outputs.will-release }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      
+
       - id: get-version
         name: Release
         uses: shiipou/github-actions/jobs/get-version@main
