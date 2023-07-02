@@ -44,7 +44,7 @@ runs:
 
         assets="${{ inputs.assets }}"
         if [ -z "$assets" ]; then
-          assets="$(find artifacts/ -type f)"
+          assets="$(find artifacts/ -type f -printf "%p ")"
         fi
         echo "$assets"
         
