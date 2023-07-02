@@ -42,9 +42,9 @@ runs:
           ARGS="$ARGS --prerelease"
         fi
         
-        ls -lia "artifacts/"
-        ls -lia "artifacts/{linux,macos,windows}"
-        ls -lia "artifacts/{linux,macos,windows}/1.0.0+13/"
+        ls "artifacts/"
+        ls "artifacts/{linux,macos,windows}"
+        ls "artifacts/{linux,macos,windows}/1.0.0+13/"
         assets="$(ls "$(dirname "${{ inputs.assets }}")")"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
