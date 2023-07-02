@@ -43,10 +43,8 @@ runs:
         fi
         
         ls -lia "artifacts/"
-        ls -lia "artifacts/linux"
-        ls -lia "artifacts/macos"
-        ls -lia "artifacts/windows"
-        ls -lia "artifacts/{linux,macos,windows}/*/"
+        ls -lia "artifacts/{linux,macos,windows}"
+        ls -lia "artifacts/{linux,macos,windows}/1.0.0+14/"
         assets="$(ls "$(dirname "${{ inputs.assets }}")")"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
