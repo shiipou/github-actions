@@ -42,7 +42,7 @@ runs:
           ARGS="$ARGS --prerelease"
         fi
         
-        find "artifacts/" -type f
         assets="$(find "artifacts/" -type f)"
+        echo "$assets"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
