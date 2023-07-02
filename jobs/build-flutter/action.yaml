@@ -42,7 +42,7 @@ runs:
     with:
       result-encoding: string
       script: |
-        return await io.which('flutter', true)
+        return await io.which('flutter', true).catch(_=>'')
   
   - name: Setup node
     if: ${{ runner.os == 'macOS' }}
