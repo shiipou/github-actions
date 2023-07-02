@@ -32,14 +32,9 @@ on:
         type: string
         description: 'The runner to use to build the app (ubuntu-latest, ....)'
         required: true
-      build-args:
+      flutter-extra-args:
         type: string
-        description: 'Extra build args to pass to the flutter commands'
-        required: false
-        default: ''
-      distributor-args:
-        type: string
-        description: 'Extra build args to pass to the flutter_distributor command. If set, override the build-args input.'
+        description: 'Extra build args to pass to the flutter_distributor commands'
         required: false
         default: ''
       artifacts:
@@ -104,8 +99,7 @@ jobs:
           build: ${{ inputs.build }}
           platform: ${{ inputs.platform }}
           targets: ${{ inputs.targets }}
-          build-args: ${{ inputs.build-args }}
-          distributor-args: ${{ inputs.distributor-args }}
+          flutter-extra-args: ${{ inputs.flutter-extra-args }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
