@@ -42,7 +42,9 @@ runs:
           ARGS="$ARGS --prerelease"
         fi
         
-        ls -lia "$(dirname "${{ inputs.assets }}")"
+        ls -lia "artifacts/"
+        ls -lia "artifacts/*/"
+        ls -lia "artifacts/*/*/"
         assets="$(ls "$(dirname "${{ inputs.assets }}")")"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
