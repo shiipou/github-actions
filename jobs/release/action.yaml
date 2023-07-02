@@ -43,6 +43,6 @@ runs:
         fi
         
         find -type f "artifacts/"
-        assets="$(find -type f "artifacts/")"
+        assets="$(find "artifacts/" -type f)"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
