@@ -43,8 +43,6 @@ runs:
         fi
         
         find -type f "artifacts/"
-        ls "artifacts/{linux,macos,windows}"
-        ls "artifacts/{linux,macos,windows}/1.0.0+13/"
         assets="$(find -type f "artifacts/")"
         
         gh release create $ARGS "v${{ inputs.version }}" "$assets"
