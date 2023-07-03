@@ -3,6 +3,11 @@ name: Build Flutter
 on:
   workflow_call:
     inputs:
+      working-directory:
+        type: string
+        description: 'The directory where to run the action'
+        required: false
+        default: '.'
       package-name:
         type: string
         description: 'Name of the package to deploy'
@@ -42,16 +47,16 @@ on:
         description: 'Path to the artifacts build by the action (dist/macos/*.{zip,dmg})'
         required: true
     secrets:
-      uploadKeyStore:
+      upload-key-store:
         description: The keystore file to sign the app
         required: false
-      uploadKeyName:
+      upload-key-name:
         description: The name of the key to sign the app
         required: false
-      uploadKeyPassword:
+      upload-key-password:
         description: The password of the key to sign the app
         required: false
-      serviceAccountJsonPlainText:
+      service-account-json:
         description: The token that'll authentificate the user to the Google Playstore API to create new release
         required: false
 
@@ -91,6 +96,15 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Build
+        if: ${{ runner.os == 'Linux' && secrets.upload-key-store }}
+        uses: shiipou/github-actions/jobs/android-keystore@main
+        with:
+          working-directory: './android'
+          upload-key-store: ${{ secrets.upload-key-store }}
+          upload-key-name: ${{ secrets.upload-key-name }}
+          upload-key-password: ${{ secrets.upload-key-password }}
 
       - name: Build
         uses: shiipou/github-actions/jobs/build-flutter@main

@@ -1,0 +1,47 @@
+name: Android keystore
+description: 'Will define keystore and key properties for Android signing'
+author: shiipou
+branding:
+  color: blue
+  icon: package
+
+inputs:
+  working-directory:
+    description: The working directory to run the command in
+    required: false
+    default: '.'
+  upload-key-store:
+    description: The keystore file to sign the app
+    required: false
+  upload-key-name:
+    description: The name of the key to sign the app
+    required: false
+  upload-key-password:
+    description: The password of the key to sign the app
+    required: false
+  service-account-json:
+    description: The token that'll authentificate the user to the Google Playstore API to create new release
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+  - name: Setup node
+    if: ${{ runner.os == 'macOS' }}
+    uses: actions/setup-node@v3
+    with:
+      node-version: 18
+
+  - name: Create ${{ inputs.working-directory}}/android/key.properties
+    if: ${{ inputs.upload-key-store }}
+    env:
+      KEYSTORE: ${{ inputs.upload-key-store }}
+    run: |
+      mkdir -p ${{ inputs.working-directory}}/android
+      keystore_file="$(mktemp)"
+      echo "storeFile=$keystore_file" >> ${{ inputs.working-directory}}/android/key.properties
+      echo "keyAlias=${{ inputs.upload-key-name }}" >> ${{ inputs.working-directory}}/android/key.properties
+      echo "storePassword=${{ inputs.upload-key-password }}" >> ${{ inputs.working-directory}}/android/key.properties
+      echo "keyPassword=${{ inputs.upload-key-password }}" >> ${{ inputs.working-directory}}/android/key.properties
+
+      echo "$KEYSTORE" > $keystore_file
