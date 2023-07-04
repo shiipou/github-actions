@@ -71,7 +71,7 @@ runs:
     if: ${{ runner.os == 'Linux' }}
     run: |
       sudo apt-get update -y
-      sudo apt-get install -y make cmake ninja-build libgtk-3-dev locate libfuse2
+      sudo apt-get install -y make cmake ninja-build libgtk-3-dev locate libfuse2 libsecret-1-dev libjsoncpp-dev
       flutter config --enable-linux-desktop
       wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
       chmod +x appimagetool
