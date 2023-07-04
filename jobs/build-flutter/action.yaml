@@ -43,13 +43,13 @@ runs:
       result-encoding: string
       script: |
         return await io.which('flutter', true).catch(_=>'')
-  
+
   - name: Setup node
     if: ${{ runner.os == 'macOS' }}
     uses: actions/setup-node@v3
     with:
       node-version: 18
-  
+
   - name: Setup Flutter Environment
     if: steps.check-flutter-path.outputs.result == ''
     uses: subosito/flutter-action@v2.10.0
@@ -94,7 +94,10 @@ runs:
         const pubspecPath = path.join(process.env.GITHUB_WORKSPACE, 'pubspec.yaml')
         // edit version and build number
         const pubspec = fs.readFileSync(pubspecPath, 'utf8')
-        const version = '${{ inputs.version }}'
+
+        // Remove channel from version, if we have `1.0.0-beta.1`, we want `1.0.0.1`
+        const version = '${{ inputs.version }}'.replace(/-.*$/, '')
+
         const build = '${{ inputs.build }}'
         let version_string = ''
         if (build.length > 0) {
@@ -111,7 +114,7 @@ runs:
     run: |
       dart pub global activate flutter_distributor
       flutter_distributor.bat package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
-      
+
   - name: Build (Linux/MacOS)
     shell: sh
     if: ${{ runner.os != 'Windows' }}
