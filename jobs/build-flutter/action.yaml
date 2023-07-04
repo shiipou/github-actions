@@ -54,7 +54,7 @@ runs:
     if: steps.check-flutter-path.outputs.result == ''
     uses: subosito/flutter-action@v2.10.0
     with:
-      channel: ${{ inputs.flutter-version }}
+      channel: ${{ inputs.flutter-channel }}
       flutter-version: ${{ inputs.flutter-version }}
       cache: true
       cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
