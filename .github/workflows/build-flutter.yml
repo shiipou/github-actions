@@ -24,7 +24,12 @@ on:
         type: string
         description: 'Version of Flutter to use'
         required: false
-        default: '3.x.x'
+        default: 'any'
+      flutter-channel:
+        type: string
+        description: 'Channel of Flutter to use'
+        required: false
+        default: 'stable'
       platform:
         type: string
         description: 'Platform where to build the app (linux,android,...)'
@@ -114,6 +119,8 @@ jobs:
           platform: ${{ inputs.platform }}
           targets: ${{ inputs.targets }}
           flutter-extra-args: ${{ inputs.flutter-extra-args }}
+          flutter-version: ${{ inputs.flutter-version }}
+          flutter-channel: ${{ inputs.flutter-channel }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
