@@ -98,7 +98,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build
-        if: ${{ runner.os == 'Linux' && secrets.upload-key-store }}
+        if: runner.os == 'Linux' && secrets.upload-key-store
         uses: shiipou/github-actions/jobs/android-keystore@main
         with:
           working-directory: './android'
