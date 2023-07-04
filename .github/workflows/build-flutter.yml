@@ -24,7 +24,7 @@ on:
         type: string
         description: 'Version of Flutter to use'
         required: false
-        default: 'any'
+        default: '3.10.x'
       flutter-channel:
         type: string
         description: 'Channel of Flutter to use'
