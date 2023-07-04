@@ -102,7 +102,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Build
+      - name: Assign Keystore
         if: runner.os == 'Linux'
         uses: shiipou/github-actions/jobs/android-keystore@main
         with:
