@@ -1,0 +1,31 @@
+name: Node Build
+description: 'Build a Node app'
+author: shiipou
+branding:
+  color: blue
+  icon: package
+
+inputs:
+  node-version:
+    description: 'The version of node to use'
+    required: false
+    default: 'latest'
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Setup go
+    uses: actions/setup-node@v3
+    with:
+      go-version: ${{ inputs.go-version }}
+
+  - name: Install Dependencies
+    shell: sh
+    run: |
+      npm i
+
+  - name: Build
+    shell: sh
+    run: |
+      npm run build

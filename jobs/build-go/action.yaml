@@ -1,0 +1,102 @@
+name: Go Build
+description: 'Build a Go app'
+author: shiipou
+branding:
+  color: blue
+  icon: package
+
+inputs:
+  version:
+    description: 'The version of the app to build'
+    required: true
+  target:
+    description: 'Target to build'
+    required: true
+  platform:
+    description: 'The platform to build target for'
+    required: true
+  go-version:
+    description: 'The version of Flutter to use for building'
+    required: false
+    default: 'stable'
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Setup go
+    uses: actions/setup-go@v4
+    with:
+      go-version: ${{ inputs.go-version }}
+
+  - name: Setup Flutter Environment
+    if: steps.check-flutter-path.outputs.result == ''
+    uses: subosito/flutter-action@v2.10.0
+    with:
+      channel: ${{ inputs.flutter-channel }}
+      flutter-version: ${{ inputs.flutter-version }}
+      cache: true
+      cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
+      cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+
+  - name: Install Dependencies (windows)
+    shell: pwsh
+    if: ${{ runner.os == 'Windows' }}
+    run: |
+      flutter config --enable-windows-desktop
+
+  - name: Install Dependencies (linux)
+    shell: sh
+    if: ${{ runner.os == 'Linux' }}
+    run: |
+      sudo apt-get update -y
+      sudo apt-get install -y make cmake ninja-build libgtk-3-dev locate libfuse2 libsecret-1-dev libjsoncpp-dev
+      flutter config --enable-linux-desktop
+      wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+      chmod +x appimagetool
+      mv appimagetool /usr/local/bin/
+
+  - name: Install Dependencies (macos)
+    shell: sh
+    if: ${{ runner.os == 'macOS' }}
+    run: |
+      flutter config --enable-macos-desktop
+      npm install -g appdmg
+
+  - name: Update version
+    uses: actions/github-script@v6
+    with:
+      script: |
+        // Update pubspec.yaml inplace
+        const fs = require('fs')
+        const path = require('path')
+        const pubspecPath = path.join(process.env.GITHUB_WORKSPACE, 'pubspec.yaml')
+        // edit version and build number
+        const pubspec = fs.readFileSync(pubspecPath, 'utf8')
+
+        // Remove channel from version, if we have `1.0.0-beta.1`, we want `1.0.0.1`
+        const version = '${{ inputs.version }}'.replace(/-.*$/, '')
+
+        const build = '${{ inputs.build }}'
+        let version_string = ''
+        if (build.length > 0) {
+          version_string = `${version}+${build}`
+        } else {
+          version_string = `${version}`
+        }
+        const newPubspec = pubspec.replace(/version: .*/, `version: ${version_string}`)
+        fs.writeFileSync(pubspecPath, newPubspec)
+
+  - name: Build (Windows)
+    shell: sh
+    if: ${{ runner.os == 'Windows' }}
+    run: |
+      dart pub global activate flutter_distributor
+      flutter_distributor.bat package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
+
+  - name: Build (Linux/MacOS)
+    shell: sh
+    if: ${{ runner.os != 'Windows' }}
+    run: |
+      dart pub global activate flutter_distributor
+      flutter_distributor package ${{ inputs.flutter-extra-args }} --platform ${{ inputs.platform }} --targets ${{ inputs.targets }}
