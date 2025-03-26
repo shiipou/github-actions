@@ -1,0 +1,48 @@
+name: Generate Tags
+# description: Generate comma separated list of tags for a version given as input
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: 'Semantic version to generate tags for'
+        required: true
+      template:
+        type: string
+        description: 'Template for the tags (use [:version:] as a placeholder for the version)'
+        required: false
+        default: '[:version:]'
+    outputs:
+      tags:
+        description: 'Comma-separated list of generated tags'
+        value: ${{ jobs.generate-tags.outputs.tags }}
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.generate-tags.outputs.tags }}
+    steps:
+      - name: Generate tags
+        id: generate-tags
+        run: |
+          version="${{ inputs.version }}"
+          template="${{ inputs.template }}"
+
+          # Generate full version tag
+          tags="${template//\[:version:\]/$version}"
+
+          # Generate partial version tags if not a prerelease
+          if [[ ! "$version" =~ "-" ]]; then
+              major_minor=$(echo "$version" | cut -d. -f1,2)
+              major=$(echo "$version" | cut -d. -f1)
+              tags="$tags,${template//\[:version:\]/$major_minor},${template//\[:version:\]/$major}"
+          else
+              # For prerelease, generate only the major.minor-prerelease tag
+              major_minor_prerelease=$(echo "$version" | grep -oE '^[0-9]+\.[0-9]+-[^\.]+')
+              if [[ -n "$major_minor_prerelease" ]]; then
+                  tags="$tags,${template//\[:version:\]/$major_minor_prerelease}"
+              fi
+          fi
+
+          echo "tags=$tags" >> $GITHUB_OUTPUT
