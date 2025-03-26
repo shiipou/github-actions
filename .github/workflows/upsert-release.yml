@@ -12,6 +12,11 @@ on:
         type: string
         description: 'Changelog text (only used when creating a release)'
         required: false
+      prerelease:
+        type: boolean
+        description: 'Whenever or not to produce a pre-release'
+        required: false
+        default: false
       with-artifact-name:
         type: string
         description: 'Identifier for the build artifact (e.g., android-aab or ios-ipa)'
@@ -56,11 +61,17 @@ jobs:
           if [ -n "${{ inputs.artifact-path }}" ]; then
             artifact_arg="artifacts/${{ inputs.with-artifact-path }}"
           fi
+          
+          prerelease_args=''
+          if ${{ inputs.prerelease }} ; then
+            prerelease_args='--prerelease'
+          fi
 
           echo "Creating release ${{ inputs.version }}..."
           gh release create "${{ inputs.version }}" \
             --repo ${{ github.repository }} \
             -t "v${{ inputs.version }}" \
+            $prerelease_args \
             -F <(echo "${{ inputs.changelog }}") \
             $artifact_arg
       
