@@ -60,7 +60,7 @@ jobs:
 
       - name: Build with Gradle
         env:
-          DATABASE_URL: postgresql://localhost:5432/app
+          DATABASE_URL: postgresql://postgres:5432/app
           DATABASE_USER: app
           DATABASE_PASSWORD: app
         run: gradle test
