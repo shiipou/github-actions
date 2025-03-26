@@ -35,6 +35,9 @@ on:
       changelog:
         description: 'The changes between calculated version and previous version'
         value: ${{ jobs.get_version.outputs.changelog }}
+      channel:
+        description: 'The pre-release channel used to produce the version'
+        value: ${{ jobs.get_version.outputs.channel }}
 
 jobs:
   get_version:
@@ -42,6 +45,7 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       changelog: ${{ steps.get_version.outputs.changelog }}
+      channel: ${{ steps.get_version.outputs.channel }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
