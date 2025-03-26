@@ -59,6 +59,7 @@ jobs:
 
           echo "Creating release ${{ inputs.version }}..."
           gh release create "${{ inputs.version }}" \
+            --repo ${{ github.repository }} \
             -t "${{ inputs.version }}" \
             -F <(echo "${{ inputs.changelog }}") \
             $artifact_arg
@@ -70,7 +71,7 @@ jobs:
           if [ -n "${{ inputs.with-artifact-path }}" ]; then
             IFS=',' read -r -a artifacts <<< "${{ inputs.with-artifact-path }}"
             artifacts_arg="artifacts/${artifacts[@]}"
-            gh release upload "${{ inputs.version }}" $artifacts_arg --clobber
+            gh release upload "${{ inputs.version }}" $artifacts_arg --clobber --repo ${{ github.repository }}
           else
             echo "No artifact to upload"
           fi
