@@ -23,7 +23,7 @@ on:
         description: 'Prerelease branch names'
         required: false
         default: beta,alpha,rc
-      changelog-include-hidden-section:
+      changelog-include-hidden-sections:
         type: boolean
         description: 'Include hidden sections in the changelog'
         required: false
@@ -72,8 +72,8 @@ jobs:
             echo "Determined version: ${VERSION}"
             tag="$(git tag --list $VERSION)"
             if [ -z "$tag" ] ; then
-              if ${{ inputs.changelog-include-hidden-section }} ; then
-                hidden_args="--include-hidden-section"
+              if ${{ inputs.changelog-include-hidden-sections }} ; then
+                hidden_args="--include-hidden-sections"
               fi
               CHANGELOG=$(convco changelog $hidden_args -u $VERSION)
               echo "version=${VERSION}" >> $GITHUB_OUTPUT
