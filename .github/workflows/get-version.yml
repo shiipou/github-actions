@@ -71,7 +71,7 @@ jobs:
             VERSION=$(convco version -b $prerelease_args)
             echo "Determined version: ${VERSION}"
             tag="$(git tag --list $VERSION)"
-            if [ -n "$tag" ] ; then
+            if [ -z "$tag" ] ; then
               if ${{ inputs.changelog-include-hidden-section }} ; then
                 hidden_args="--include-hidden-section"
               fi
