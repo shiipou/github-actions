@@ -1,50 +1,91 @@
-name: Get version
+name: Get Version
+# description: Determine the version of the project based on the latest commit and generate a changelog using the Rust Convco cli tool.
 
 on:
   workflow_call:
     inputs:
-      release-branches:
+      convco-version:
         type: string
-        description: The branches on which releases should happen, comma separated name of branches
+        description: 'Version of Convco to use (default: latest)'
         required: false
-        default: '^(main)$'
+        default: 'latest'
+      path:
+        type: string
+        description: 'Only commits that update those <paths> will be taken into account.'
+        required: false
+      release-branch:
+        type: string
+        description: 'Name of the release branch'
+        required: false
+        default: main
       prerelease-branches:
         type: string
-        description: The branches on which prereleases should happen, comma separated name of branches
+        description: 'Prerelease branch names'
         required: false
-        default: '^(rc|beta|alpha)$'
+        default: beta,alpha,rc
+      changelog-include-hidden-section:
+        type: boolean
+        description: 'Include hidden sections in the changelog'
+        required: false
+        default: false
     outputs:
       version:
-        description: The version that was released
-        value: ${{ jobs.get-version.outputs.version }}
-      is-prerelease:
-        description: The version that was released
-        value: ${{ jobs.get-version.outputs.is-prerelease }}
-      changelogs:
-        description: The version that was released
-        value: ${{ jobs.get-version.outputs.changelogs }}
-      will-release:
-        description: The version will be released
-        value: ${{ jobs.get-version.outputs.will-release }}
-
-permissions:
-  contents: read
+        description: 'The calculated version'
+        value: ${{ jobs.get_version.outputs.version }}
+      changelog:
+        description: 'The changes between calculated version and previous version'
+        value: ${{ jobs.get_version.outputs.changelog }}
 
 jobs:
-  get-version:
+  get_version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.version }}
-      is-prerelease: ${{ steps.get-version.outputs.is-prerelease }}
-      changelogs: ${{ steps.get-version.outputs.changelogs }}
-      will-release: ${{ steps.get-version.outputs.will-release }}
+      version: ${{ steps.get_version.outputs.version }}
+      changelog: ${{ steps.get_version.outputs.changelog }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - id: get-version
-        name: Release
-        uses: shiipou/github-actions/jobs/get-version@main
-        with:
-          release-branches: ${{ inputs.release-branches }}
-          prerelease-branches: ${{ inputs.prerelease-branches }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup convco
+        uses: convco/convco-action@v0.2.0
+        
+      - name: Determine version using convco CLI
+        id: get_version
+        run: |
+          if [[ -n "${{ inputs.path }}" ]]; then
+            echo "Using path: ${{ inputs.path }}"
+            path_args="--path ${{ inputs.path }}"
+          fi
+          IFS="," read -ra prerelease_branches <<< "${{ inputs.prerelease-branches }}"
+          IFS="," read -ra release_branches <<< "${{ inputs.release-branch }}"
+          current_branch="${{ github.ref_name }}"
+          must_release=false
+          if [[ "$IFS${prerelease_branches[*]}$IFS" =~ "$IFS${current_branch}$IFS" ]] ; then
+            must_release=true
+            prerelease_args="--prerelease ${current_branch}"
+            channel=${current_branch}
+          elif [[ "$IFS${release_branches[*]}$IFS" =~ "$IFS${current_branch}$IFS" ]]; then
+            must_release=true
+          fi
+          if ${must_release} ; then
+            VERSION=$(convco version -b $prerelease_args)
+            echo "Determined version: ${VERSION}"
+            tag="$(git tag --list $VERSION)"
+            if [ -n "$tag" ] ; then
+              if ${{ inputs.changelog-include-hidden-section }} ; then
+                hidden_args="--include-hidden-section"
+              fi
+              CHANGELOG=$(convco changelog $hidden_args -u $VERSION)
+              echo "version=${VERSION}" >> $GITHUB_OUTPUT
+              if [ -n "${channel}" ]; then
+                echo "channel=${channel}" >> $GITHUB_OUTPUT
+              fi
+              echo "changelog<<EOF" >> $GITHUB_OUTPUT
+              echo "${CHANGELOG}" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            else
+              echo "Will not release: Version already exist"
+            fi
+          else
+            echo "Will not release: Event not hit release_branch or prerelease_branches"
+          fi
