@@ -45,10 +45,8 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     
     steps:
-      - if: inputs.envs != ''
-        run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
-      - if: secrets.envs != ''
-        run: echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
+      - run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
+      - run: echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
       
