@@ -1,0 +1,61 @@
+name: Build Spring Boot App
+# description: Build a Spring Boot application and generate a JAR artifact.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        description: 'Current Working directory (Useful for mono-repo)'
+        required: false
+        default: '.'
+      version:
+        type: string
+        description: 'Version to build'
+        required: true
+      java-version:
+        type: string
+        description: 'Version of Java to use'
+        required: false
+        default: '21'
+      java-distribution:
+        type: string
+        description: 'Distribution of java to use'
+        required: false
+        default: 'temurin'
+      artifact-name:
+        type: string
+        description: 'Give generated artifact a name'
+        required: false
+      artifact-path:
+        type: string
+        description: 'Path to the generated artifact to upload'
+        required: false
+        default: 'build/libs/*.jar'
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: gradle
+
+      - name: Build with Gradle
+        run: gradle build -P version=${{ inputs.version }} -x test
+
+      - name: Upload build artifacts
+        if: inputs.artifact-name != '' && inputs.artifact-path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.artifact-path }}
