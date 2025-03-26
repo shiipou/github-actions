@@ -60,7 +60,7 @@ jobs:
           echo "Creating release ${{ inputs.version }}..."
           gh release create "${{ inputs.version }}" \
             --repo ${{ github.repository }} \
-            -t "${{ inputs.version }}" \
+            -t "v${{ inputs.version }}" \
             -F <(echo "${{ inputs.changelog }}") \
             $artifact_arg
       
