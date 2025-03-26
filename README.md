@@ -49,14 +49,8 @@ on:
     branches: 
       - main
       - beta
-    paths:
-      - 'server/**'
-      - '!server/**/*.md'
   pull_request:
     types: [opened, edited, reopened, synchronize, ready_for_review]
-    paths:
-      - 'mobile/**'
-      - '!mobile/**/*.md'
   workflow_dispatch:
 
 permissions: 
