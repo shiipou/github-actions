@@ -29,6 +29,7 @@ on:
         default: 'artifacts/'
 
 permissions:
+  contents: read
   packages: write
 
 jobs:
