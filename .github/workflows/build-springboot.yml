@@ -32,6 +32,10 @@ on:
         description: 'Path to the generated artifact to upload'
         required: false
         default: 'build/libs/*.jar'
+      envs:
+        type: string
+        description: 'Add extra env variable to the build, one value per line : <name>=<value>'
+        required: false
   
 jobs:
   build:
@@ -41,8 +45,10 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     
     steps:
-      - uses: actions/checkout@v4
+      - run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
 
+      - uses: actions/checkout@v4
+      
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
