@@ -61,7 +61,7 @@ jobs:
       - name: Build with Gradle
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app
-          SPRING_DATASOURCE_USERNAME: app
+          SPRING_DATASOURCE_USER: app
           SPRING_DATASOURCE_PASSWORD: app
         run: gradle test
 
