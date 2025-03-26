@@ -1,0 +1,87 @@
+name: Coverage Report
+# description: Parse a coverage report and, if needed, check if the coverage is above a minimum threshold.
+
+on:
+  workflow_call:
+    inputs:
+      with-artifact-name:
+        type: string
+        description: Coverage report artifact name
+        required: true
+      with-artifact-path:
+        type: string
+        description: Path to the coverage report artifact
+        required: false
+        default: lcov.info
+      min-lines-coverage:
+        type: number
+        description: Minimum percentage of lines covered
+        required: false
+    outputs:
+      lines-covered:
+        description: 'Number of lines covered'
+        value: ${{ jobs.coverage.outputs.lines-covered }}
+      lines-total:
+        description: 'Total number of lines'
+        value: ${{ jobs.coverage.outputs.lines-total }}
+      lines-percentage:
+        description: 'Percentage of lines covered'
+        value: ${{ jobs.coverage.outputs.lines-percentage }}
+      functions-covered:
+        description: 'Number of functions covered'
+        value: ${{ jobs.coverage.outputs.functions-covered }}
+      functions-total:
+        description: 'Total number of functions'
+        value: ${{ jobs.coverage.outputs.functions-total }}
+      functions-percentage:
+        description: 'Percentage of functions covered'
+        value: ${{ jobs.coverage.outputs.functions-percentage }}
+      branches-covered:
+        description: 'Number of branches covered'
+        value: ${{ jobs.coverage.outputs.branches-covered }}
+      branches-total:
+        description: 'Total number of branches'
+        value: ${{ jobs.coverage.outputs.branches-total }}
+      branches-percentage:
+        description: 'Percentage of branches covered'
+        value: ${{ jobs.coverage.outputs.branches-percentage }}
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    outputs:
+      lines-covered: ${{ steps.coverage.outputs.lines-covered }}
+      lines-total: ${{ steps.coverage.outputs.lines-total }}
+      lines-percentage: ${{ steps.coverage.outputs.lines-percentage }}
+      functions-covered: ${{ steps.coverage.outputs.functions-covered }}
+      functions-total: ${{ steps.coverage.outputs.functions-total }}
+      functions-percentage: ${{ steps.coverage.outputs.functions-percentage }}
+      branches-covered: ${{ steps.coverage.outputs.branches-covered }}
+      branches-total: ${{ steps.coverage.outputs.branches-total }}
+      branches-percentage: ${{ steps.coverage.outputs.branches-percentage }}
+    steps:
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
+      - name: Download coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.with-with-artifact-name }}
+          path: coverage/
+      - name: Parse coverage report
+        id: coverage
+        run: |
+          regex='^\s*(lines|functions|branches)\.+: ([0-9]+\.?[0-9]*)% \(([0-9]+) of ([0-9]+) \w+\)$'
+          while read -r line; do
+            if [[ $line =~ $regex ]]; then
+              echo "${BASH_REMATCH[1]}-covered=${BASH_REMATCH[3]}" >> $GITHUB_OUTPUT
+              echo "${BASH_REMATCH[1]}-total=${BASH_REMATCH[4]}" >> $GITHUB_OUTPUT
+              echo "${BASH_REMATCH[1]}-percentage=${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
+            fi
+          done < <(lcov --summary coverage/${{ inputs.with-artifact-path }})
+      - name: Check coverage report data
+        if: inputs.min-lines-coverage != ''
+        run: |
+          if [[ ${{ steps.coverage.outputs.lines-percentage }} -lt ${{ inputs.min-lines-coverage }} ]]; then
+            echo "Coverage is below the minimum required (${{ inputs.min-lines-coverage }}%): ${{ steps.coverage.outputs.lines-percentage }}%"
+            exit 1
+          fi
