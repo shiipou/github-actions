@@ -1,0 +1,74 @@
+name: Upsert Release
+# description: Create or update a release on GitHub. Creation will insert everything, update will only add new assets.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: 'Release tag (e.g., 1.0.0)'
+        required: true
+      changelog:
+        type: string
+        description: 'Changelog text (only used when creating a release)'
+        required: false
+      with-artifact-name:
+        type: string
+        description: 'Identifier for the build artifact (e.g., android-aab or ios-ipa)'
+        required: false
+      with-artifact-path:
+        type: string
+        description: 'Comma separated list of file to deploy (inside of the artifact)'
+        required: true
+
+permissions: 
+  contents: write
+
+jobs:
+  upsert_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if release exists
+        id: check_release
+        run: |
+          set +e
+          gh release view "${{ inputs.version }}" > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+          set -e
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.with-artifact-name }}
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Create release (if not exists)
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          artifact_arg=''
+          if [ -n "${{ inputs.artifact-path }}" ]; then
+            artifact_arg="artifacts/${{ inputs.with-artifact-path }}"
+          fi
+
+          echo "Creating release ${{ inputs.version }}..."
+          gh release create "${{ inputs.version }}" \
+            -t "${{ inputs.version }}" \
+            -F <(echo "${{ inputs.changelog }}") \
+            $artifact_arg
+      
+      - name: Update release (if already exists)
+        if: steps.check_release.outputs.exists == 'true'
+        run: |
+          echo "Release ${{ inputs.version }} already exists; updating assets..."
+          if [ -n "${{ inputs.with-artifact-path }}" ]; then
+            IFS=',' read -r -a artifacts <<< "${{ inputs.with-artifact-path }}"
+            artifacts_arg="artifacts/${artifacts[@]}"
+            gh release upload "${{ inputs.version }}" $artifacts_arg --clobber
+          else
+            echo "No artifact to upload"
+          fi
