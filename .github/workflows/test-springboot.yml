@@ -30,7 +30,7 @@ on:
         default: 'build/reports/tests/test/'
   
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
