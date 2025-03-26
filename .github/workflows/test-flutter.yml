@@ -1,0 +1,62 @@
+name: Test Flutter App
+# description: Run tests and generate coverage report for a Flutter application in an artifact.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        description: 'Current Working directory (Useful for mono-repo and run this only in this directory)'
+        required: false
+        default: '.'
+      flutter-version:
+        type: string
+        description: 'Version of Flutter to use'
+        required: false
+      flutter-channel:
+        type: string
+        description: 'Channel of Flutter to use'
+        required: false
+        default: 'stable'
+      artifact-name:
+        type: string
+        description: 'Give artifact name for coverage report'
+        required: false
+      artifact-path:
+        type: string
+        description: 'Coverage report path to upload as artifact'
+        required: false
+        default: 'coverage/lcov.info'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2.18.0
+        with:
+          channel: ${{ inputs.flutter-channel }}
+          flutter-version: ${{ inputs.flutter-version }}
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+
+      - name: Run tests and generate coverage report
+        id: test
+        run: |
+          flutter test --coverage
+          GENERATED_COVERAGE_NAME="$(mktemp -u -t coverage-XXXX)"
+          echo "artifact-name=${GENERATED_COVERAGE_NAME}" >> $GITHUB_OUTPUT
+          
+      - name: Upload artifact
+        if: inputs.artifact-name != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.working-directory }}/${{ inputs.artifact-path }}
