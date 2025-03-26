@@ -9,10 +9,6 @@ on:
         description: 'Current Working directory (Useful for mono-repo)'
         required: false
         default: '.'
-      version:
-        type: string
-        description: 'Version to build'
-        required: true
       java-version:
         type: string
         description: 'Version of Java to use'
