@@ -68,7 +68,7 @@ jobs:
           fi
 
           echo "Creating release ${{ inputs.version }}..."
-          gh release create "${{ inputs.version }}" \
+          gh release create "v${{ inputs.version }}" \
             --repo ${{ github.repository }} \
             -t "v${{ inputs.version }}" \
             $prerelease_args \
