@@ -1,0 +1,121 @@
+name: Update PR Custom Status
+# description: Create or Update the status of a check run on a PR. This allow to create a custom message with a status on a PR.
+
+on:
+  workflow_call:
+    inputs:
+      check-run-id:
+        description: 'The ID of the check run to update (create one if not provided)'
+        required: false
+        type: number
+      name:
+        description: 'The name of the check. For example, "code-coverage".'
+        required: true
+        type: string
+      sha:
+        description: 'The commit SHA to update the status on (defaults to the triggering commit)'
+        required: false
+        type: string
+      status:
+        description: 'Pipeline status (e.g., queued, in_progress, completed )'
+        required: false
+        type: string
+        default: queued
+      conclusion:
+        description: 'The conclusion of the status (e.g., success, failure, neutral, cancelled, skipped, timed_out, action_required)'
+        required: false
+        type: string
+      output-title:
+        description: 'The title of the status (require output_summary)'
+        required: false
+        type: string
+      output-summary:
+        description: 'The summary of the status'
+        required: false
+        type: string
+      output-text:
+        description: 'The text of the status'
+        required: false
+        type: string
+      output-image_url:
+        description: 'The image URL of the status (require output_image_alt)'
+        required: false
+        type: string
+      output-image_alt:
+        description: 'The image alt text of the status'
+        required: false
+        type: string
+    outputs:
+      check-run-id:
+        description: 'The ID of the check run that was created or updated'
+        value: ${{ jobs.update-status.outputs.check-run-id }}
+
+permissions:
+  statuses: write
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    outputs:
+      check-run-id: ${{ steps.check-run.outputs.result }}
+    steps:
+      - name: Set PR custom status
+        id: check-run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Retrieve the input values
+            const check_run_id_input = '${{ inputs.check-run-id }}';
+            const name = '${{ inputs.name }}';
+            const status = '${{ inputs.status }}';
+            // Use the provided SHA or fall back to the current commit SHA
+            const sha = '${{ inputs.sha }}' || process.env.GITHUB_SHA;
+            const conclusion_input = '${{ inputs.conclusion }}';
+            const output_title = '${{ inputs.output-title }}';
+            const output_summary = '${{ inputs.output-summary }}';
+            const output_text = '${{ inputs.output-text }}';
+            const output_image_url = '${{ inputs.output-image-url }}';
+            const output_image_alt = '${{ inputs.output-image-alt }}';
+            
+            let check_run_id;
+            if(check_run_id_input) {
+              check_run_id = parseInt(check_run_id_input);
+            }
+
+            let output;
+            if (output_title) {
+              output = {
+                title: output_title,
+                summary: output_summary,
+                text: output_text
+              };
+              if(output_image_url) {
+                output.images = [{ alt: output_image_alt, image_url: output_image_url }];
+              }
+            }
+
+            let conclusion;
+            if (conclusion_input) {
+              conclusion = conclusion_input;
+            }
+
+            // Extract owner and repo from the GITHUB_REPOSITORY environment variable
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+
+            // Create the Check Run
+            api_url = check_run_id ? 'POST /repos/{owner}/{repo}/check-runs' : 'PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}';
+            const checkRunResponse = await github.request(api_url, {
+              owner,
+              repo,
+              check_run_id,
+              name,
+              head_sha: sha,
+              status,
+              conclusion,
+              output,
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            });
+
+            return checkRunResponse.id;
