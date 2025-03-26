@@ -1,0 +1,41 @@
+name: Check Spring Boot App
+# description: Check a Spring Boot application.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        description: 'Current Working directory (Useful for mono-repo)'
+        required: false
+        default: '.'
+      java-version:
+        type: string
+        description: 'Version of Java to use'
+        required: false
+        default: '21'
+      java-distribution:
+        type: string
+        description: 'Distribution of java to use'
+        required: false
+        default: 'temurin'
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: gradle
+
+      - name: Build with Gradle
+        run: gradle check -x test
