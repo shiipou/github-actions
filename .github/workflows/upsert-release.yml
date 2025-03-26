@@ -24,8 +24,10 @@ on:
 permissions: 
   contents: write
 
-jobs:
+jobs:  
   upsert_release:
+    env:
+      GH_TOKEN: ${{ github.token }}
     runs-on: ubuntu-latest
     steps:
       - name: Check if release exists
