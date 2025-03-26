@@ -1,0 +1,43 @@
+name: Check Flutter App
+# description: Check Flutter app for code style and static analysis issues.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        description: 'Current Working directory (Useful for mono-repo and run this only in this directory)'
+        required: false
+        default: '.'
+      flutter-version:
+        type: string
+        description: 'Version of Flutter to use'
+        required: false
+      flutter-channel:
+        type: string
+        description: 'Channel of Flutter to use'
+        required: false
+        default: 'stable'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2.18.0
+        with:
+          channel: ${{ inputs.flutter-channel }}
+          flutter-version: ${{ inputs.flutter-version }}
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+
+      - name: Run checks
+        id: Check
+        run: flutter analyze
