@@ -19,7 +19,7 @@ on:
       with-artifact-path:
         type: string
         description: 'Comma separated list of file to deploy (inside of the artifact)'
-        required: true
+        required: false
 
 permissions: 
   contents: write
