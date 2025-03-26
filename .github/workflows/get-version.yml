@@ -49,7 +49,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+          
       - name: Setup convco
         uses: convco/convco-action@v0.2.0
         
