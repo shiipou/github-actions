@@ -1,0 +1,60 @@
+name: Spring Boot CI/CD
+
+on:
+  push:
+    branches: 
+      - main
+      - beta
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+
+permissions: 
+  contents: write
+  packages: write
+
+jobs:
+  get-version:
+    name: Get Version
+    uses: shiipou/github-actions/.github/workflows/get-version.yml@main
+    with:
+      changelog-include-hidden-sections: true
+      
+  build:
+    name: Build Spring Boot App
+    needs: get-version
+    uses: shiipou/github-actions/.github/workflows/build-springboot.yml@main
+    with:
+      artifact-name: server
+      envs: |
+        VERSION=${{ needs.get-version.outputs.version || '0.0.0' }}
+    secrets: 
+      envs: | 
+        SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+  check:
+    name: Check Spring Boot Code
+    uses: shiipou/github-actions/.github/workflows/check-springboot.yml@main
+
+  test:      
+    name: Test Spring Boot App
+    uses: shiipou/github-actions/.github/workflows/test-springboot.yml@main
+    with:
+      artifact-name: coverage-report
+
+  generate-tags:
+    name: Generate tags from version
+    needs: get-version
+    if: needs.get-version.outputs.version != ''
+    uses: shiipou/github-actions/.github/workflows/generate-tags.yml@main
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      template: ghcr.io/${{ github.repository }}/server:[:version:]
+
+  build-docker:
+    name: Build docker image
+    needs: [generate-tags, build, test, check]
+    uses: shiipou/github-actions/.github/workflows/build-docker.yml@main
+    with:
+      tags: ${{ needs.generate-tags.outputs.tags }}
+      with-artifact-name: server
+      with-artifact-path: build/libs/

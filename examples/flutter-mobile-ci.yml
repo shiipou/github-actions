@@ -1,0 +1,117 @@
+name: Mobile App CI/CD
+
+on:
+  push:
+    branches: 
+      - main
+      - beta
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+
+permissions: 
+  contents: write
+  statuses: write
+
+jobs:
+  get-version:
+    name: Get Version
+    uses: shiipou/github-actions/.github/workflows/get-version.yml@main
+    with:
+      changelog-include-hidden-sections: true
+      
+  build:
+    name: Build Flutter App
+    needs: get-version
+    if: needs.get-version.outputs.version != '' || github.event_name == 'pull_request'
+    uses: shiipou/github-actions/.github/workflows/build-flutter.yml@main
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            targets: aab
+            runner: ubuntu-latest
+            artifact-name: android-aab
+            artifact-path: dist/android/*.aab
+            flutter-build-args: release
+          - platform: ios
+            targets: ipa
+            runner: macos-latest
+            artifact-name: ios-ipa
+            artifact-path: dist/ios/*.ipa
+            flutter-build-args: release,export-method=development
+    with:
+      version: ${{ needs.get-version.outputs.version || '0.0.0' }}
+      build: ${{ github.run_id }}
+      flutter-version: '3.x'
+      platform: ${{ matrix.platform }}
+      targets: ${{ matrix.targets }}
+      runner: ${{ matrix.runner }}
+      flutter-build-args: ${{matrix.flutter-build-args}}
+      artifact-name: ${{matrix.artifact-name}}
+      artifact-path: ${{matrix.artifact-path}}
+    secrets:
+      UPLOAD_KEY_STORE: ${{ secrets.UPLOAD_KEY_STORE }}
+      UPLOAD_KEY_NAME: ${{ secrets.UPLOAD_KEY_NAME }}
+      UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+      UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+
+  check:
+    name: Check Flutter Code
+    uses: shiipou/github-actions/.github/workflows/check-flutter.yml@main
+
+  test:
+    name: Test Flutter App
+    uses: shiipou/github-actions/.github/workflows/test-flutter.yml@main
+    with:
+      artifact-name: coverage
+
+  coverage:
+    name: Read Coverage Report
+    needs: test
+    uses: shiipou/github-actions/.github/workflows/coverage-report.yml@main
+    with:
+      with-artifact-name: coverage
+      with-artifact-path: lcov.info
+  
+  release-github:
+    name: Release GitHub
+    needs: [get-version, build, coverage, check]
+    if: needs.get-version.outputs.version != ''
+    uses: shiipou/github-actions/.github/workflows/upsert-release.yml@main
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      changelog: ${{ needs.get-version.outputs.changelog }}
+      prerelease: ${{ needs.get-version.outputs.channel != '' }}
+      with-artifact-name: 'ios-ipa'
+      with-artifact-path: '*.ipa'
+
+  deploy-playstore:
+    name: Deploy to PlayStore
+    if: needs.get-version.outputs.version != ''
+    needs: [get-version, build, coverage, check]
+    uses: shiipou/github-actions/.github/workflows/deploy-flutter.yml@main
+    with:
+      store: playstore
+      package-name: io.lenra.reveel
+      with-artifact-name: android-aab
+      with-artifact-path: '*.aab'
+      playstore-track: alpha
+    secrets:
+      PLAYSTORE_SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+
+  deploy-appstore:
+    name: Deploy to AppStore
+    if: needs.get-version.outputs.version != ''
+    needs: [get-version, build, test, check]
+    uses: shiipou/github-actions/.github/workflows/deploy-flutter.yml@main
+    with:
+      store: appstore
+      with-artifact-name: ios-ipa
+      with-artifact-path: '*.ipa'
+    secrets:
+      APPSTORE_USERNAME: ${{ secrets.APPSTORE_USERNAME }}
+      APPSTORE_PASSWORD: ${{ secrets.APPSTORE_PASSWORD }}
+      APPSTOORE_APIKEY: ${{ secrets.APPSTORE_APIKEY }}
+      APPSTORE_APIISSUER: ${{ secrets.APPSTORE_APIISSUER }}

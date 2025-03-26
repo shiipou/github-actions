@@ -1,122 +1,101 @@
-# GitHub Actions Reusable Workflows
+# GitHub Actions Reusable Workflows Collection
 
-A collection of reusable GitHub Actions workflows designed to streamline your CI/CD pipeline. Chain these workflows together to create powerful and customizable automation for your projects.
+A comprehensive collection of reusable GitHub Actions workflows designed to streamline your CI/CD pipeline. This project provides modular, composable workflows that can be chained together to create powerful and customizable automation for your projects.
 
-## Features
+## 🎯 Purpose
 
-- 📦 Versioning with conventional commits
-- 🏗️ Build workflows for various platforms
-- 🧪 Testing and code quality checks
-- 🐳 Docker image building
-- 🏷️ Automated tag generation
-- 🚀 Release management
+This collection aims to:
+- Reduce duplication in GitHub Actions workflows across projects
+- Provide standardized, tested workflow components
+- Enable quick setup of complex CI/CD pipelines
+- Support multiple platforms and frameworks (Spring Boot, Flutter, Docker)
 
-## Available Workflows
+## 🚀 Quick Start
 
-### Version Management
-- `get-version.yml`: Extracts version from conventional commits
-- `generate-tags.yml`: Generates Docker tags from version
-- `upsert-release.yml`: Creates/updates GitHub releases
-- `increment-variable.yml`: Increments a repository variable
-- `release.yml`: Handles release creation with artifacts
-- `release-flutter.yml`: Specialized release workflow for Flutter apps
-
-### Build Pipelines
-- `build-springboot.yml`: Builds Spring Boot applications
-- `build-docker.yml`: Builds and pushes Docker images
-- `build-flutter.yml`: Builds Flutter applications for multiple platforms
-
-### Quality Checks
-- `check-springboot.yml`: Runs code quality checks for Spring Boot
-- `check-flutter.yml`: Analyzes Flutter code quality
-- `test-springboot.yml`: Executes tests for Spring Boot apps
-- `test-flutter.yml`: Runs Flutter tests
-- `coverage-report.yml`: Processes and validates coverage reports
-
-### Deployment
-- `deploy-flutter.yml`: Deploys Flutter apps to PlayStore/AppStore
-
-### Status Management
-- `run-check-status.yml`: Updates PR check status with custom messages
-
-## Usage Example
+To use these workflows in your project, reference them in your GitHub Actions workflow file:
 
 ```yaml
-name: Spring Boot CI/CD
-
+name: CI Pipeline
 on:
   push:
-    branches: 
-      - main
-      - beta
-    paths:
-      - 'server/**'
-      - '!server/**/*.md'
-  pull_request:
-    types: [opened, edited, reopened, synchronize, ready_for_review]
-    paths:
-      - 'mobile/**'
-      - '!mobile/**/*.md'
-  workflow_dispatch:
-
-permissions: 
-  contents: write
-  packages: write
+    branches: [main]
 
 jobs:
-  get-version:
-    name: Get Version
-    # Call the reusable workflow for getting the version using convco cli.
+  version:
     uses: shiipou/github-actions/.github/workflows/get-version.yml@main
-    with:
-      changelog-include-hidden-sections: true
-      
+    
   build:
-    name: Build Spring Boot App
-    needs: get-version
+    needs: version
+    if: needs.get-version.outputs.version != ''
     uses: shiipou/github-actions/.github/workflows/build-springboot.yml@main
     with:
-      artifact-name: server
-      envs: |
-        VERSION=${{ needs.get-version.outputs.version || '0.0.0' }}
-    secrets: 
-      envs: | 
-        SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-  check:
-    name: Check Spring Boot Code
-    uses: shiipou/github-actions/.github/workflows/check-springboot.yml@main
-
-  test:      
-    name: Test Spring Boot App
-    uses: shiipou/github-actions/.github/workflows/test-springboot.yml@main
-    with:
-      artifact-name: coverage-report
-
-  generate-tags:
-    name: Generate tags from version
-    needs: get-version
-    if: needs.get-version.outputs.version != ''
-    uses: shiipou/github-actions/.github/workflows/generate-tags.yml@main
-    with:
-      version: ${{ needs.get-version.outputs.version }}
-      template: ghcr.io/${{ github.repository }}/server:[:version:]
-
-  build-docker:
-    name: Build docker image
-    needs: [generate-tags, build, test, check]
-    uses: shiipou/github-actions/.github/workflows/build-docker.yml@main
-    with:
-      tags: ${{ needs.generate-tags.outputs.tags }}
-      with-artifact-name: server
-      with-artifact-path: build/libs/
+      version: ${{ needs.version.outputs.version }}
 ```
 
-## Requirements
+## 📦 Available Workflows
+
+### Version Management
+| Workflow | Description | Key Features |
+|----------|-------------|--------------|
+| `get-version.yml` | Extract version from commits | - Uses conventional commits<br>- Generates changelog<br>- Supports prerelease channels |
+| `generate-tags.yml` | Generate Docker image tags | - Semantic versioning support<br>- Customizable tag templates |
+| `upsert-release.yml` | Manage GitHub releases | - Creates/updates releases<br>- Handles release assets<br>- Supports prereleases |
+
+### Build Pipelines
+| Workflow | Description | Key Features |
+|----------|-------------|--------------|
+| `build-springboot.yml` | Build Spring Boot apps | - Gradle support<br>- Artifact generation<br>- Environment variables |
+| `build-docker.yml` | Build Docker images | - Multi-platform builds<br>- Build cache<br>- Artifact inclusion |
+| `build-flutter.yml` | Build Flutter apps | - Multi-platform builds<br>- Versioning support<br>- Signing support |
+
+### Quality & Testing
+| Workflow | Description | Key Features |
+|----------|-------------|--------------|
+| `check-springboot.yml` | Spring Boot code checks | - Code style<br>- Static analysis |
+| `check-flutter.yml` | Flutter code analysis | - Static analysis<br>- Code formatting |
+| `test-springboot.yml` | Spring Boot tests | - Unit tests<br>- Integration tests<br>- Coverage reports |
+| `test-flutter.yml` | Flutter tests | - Widget tests<br>- Integration tests<br>- Coverage reports |
+| `coverage-report.yml` | Process coverage data | - Coverage thresholds<br>- Report generation |
+
+### Deployment
+| Workflow | Description | Key Features |
+|----------|-------------|--------------|
+| `deploy-flutter.yml` | Deploy Flutter apps | - App Store deployment<br>- Play Store deployment<br>- Automated releases |
+
+## 📋 Requirements
 
 - GitHub Actions enabled repository
-- Appropriate permissions set in workflow
-- Required secrets configured in repository settings
+- Required permissions:
+  ```yaml
+  permissions:
+    contents: write    # For releases
+    packages: write    # For Docker images
+  ```
+- Secrets configured as needed per workflow
 
-## License
+## 🔧 Configuration
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Each workflow accepts specific inputs and secrets. See individual workflow files for detailed configuration options.
+
+### Common Inputs
+- `working-directory`: For monorepo support
+- `version`: Semantic version string
+- `artifact-name`: Name of the artifacts to produce
+- `artifact-path`: Path to files to upload as artifact
+- `with-artifact-name`: Name of the artifacts to use
+- `with-artifact-path`: Path to files in artifact
+
+## 📚 Examples
+
+See the [examples/](./examples) directory for complete workflow examples:
+- Spring Boot application pipeline
+- Flutter mobile app pipeline
+- Docker-based service pipeline
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
