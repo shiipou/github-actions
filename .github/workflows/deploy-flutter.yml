@@ -1,0 +1,78 @@
+name: Deploy Flutter App
+# description: Deploy Flutter app to PlayStore or AppStore, can also deploy to any publisher listed in flutter_distributor (https://distributor.leanflutter.dev/getting-started/)
+
+on:
+  workflow_call:
+    inputs:
+      store:
+        type: string
+        description: 'The target store (playstore or appstore)'
+        required: true
+      with-artifact-name:
+        type: string
+        description: 'Identifier for the build artifact (e.g., android-aab or ios-ipa)'
+        required: true
+      with-artifact-path:
+        type: string
+        description: 'Path to the build file to deploy (inside of the artifact)'
+        required: true
+      package-name:
+        type: string
+        description: 'The package name of the app'
+        required: false
+      playstore-track:
+        type: string
+        description: 'Release type (one of: "production", "qa", "beta", "alpha")'
+        required: false
+    secrets:
+      PLAYSTORE_SERVICE_ACCOUNT_JSON:
+        description: 'Service account JSON for PlayStore deployment'
+        required: false
+      APPSTORE_USERNAME:
+        description: 'Apple AppStore Username (require APPSTORE_PASSWORD)'
+        required: false
+      APPSTORE_PASSWORD: 
+        description: 'Apple AppStore Password'
+        required: false
+      APPSTOORE_APIKEY: 
+        description: 'Apple AppStore API Key (require APPSTORE_APIISSUER)'
+        required: false
+      APPSTORE_APIISSUER:
+        description: 'Apple AppStore API Issuer'
+        required: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.with-artifact-name }}
+          path: ./artifacts/
+
+      - name: Deploy App using flutter_distributor
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT_JSON }}
+          APPSTORE_USERNAME: ${{ secrets.APPSTORE_USERNAME }}
+          APPSTORE_PASSWORD: ${{ secrets.APPSTORE_PASSWORD }}
+          APPSTOORE_APIKEY: ${{ secrets.APPSTOORE_APIKEY }}
+          APPSTORE_APIISSUER: ${{ secrets.APPSTORE_APIISSUER }}
+        run: |
+          dart pub global activate fastforge
+          artifact_path="$(realpath ./artifacts/${{ inputs.with-artifact-path }})"
+          echo "Deploying to ${{ inputs.store }} using flutter_distributor..."
+          release_cmd="fastforge publish \
+            --targets ${{ inputs.store }} \
+            --path $artifact_path"
+          if [ "${{ inputs.store }}" = "playstore" ]; then
+            # Write the service account JSON to a file for deployment.
+            echo "$SERVICE_ACCOUNT_JSON" > service_account.json
+            release_cmd="${release_cmd} --playstore-package-name ${{ inputs.package-name }}"
+            if [ -n "${{ inputs.playstore-track }}" ]; then
+              release_cmd="${release_cmd} --playstore-track ${{ inputs.playstore-track }}"
+            fi
+          elif [ "${{ inputs.store }}" = "appstore" ]; then
+            release_cmd="${release_cmd} --playstore-package-name ${{ inputs.package-name }}"
+          fi
+          echo "Running: $release_cmd"
+          $release_cmd
