@@ -39,9 +39,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_DB: app
-          POSTGRES_USER: app
-          POSTGRES_PASSWORD: app
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -60,9 +60,9 @@ jobs:
 
       - name: Build with Gradle
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app
-          SPRING_DATASOURCE_USERNAME: app
-          SPRING_DATASOURCE_PASSWORD: app
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
         run: gradle test
 
       - name: Upload build artifacts
