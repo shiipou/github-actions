@@ -32,6 +32,10 @@ on:
         type: string
         description: 'Add extra env variable to the build, one value per line : <name>=<value>'
         required: false
+    secrets:
+      envs:
+        description: 'Add extra env variable to the build, one value per line : <name>=<value>'
+        required: false
   
 jobs:
   build:
@@ -41,8 +45,13 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     
     steps:
-      - run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
-
+      - run: |
+          if [ -n "${{ inputs.envs }}" ] ; then
+            echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${{ secrets.envs }}" ] ; then
+            echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
+          fi
       - uses: actions/checkout@v4
       
       - name: Set up JDK
