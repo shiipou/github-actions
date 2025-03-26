@@ -1,7 +1,5 @@
 name: Test Spring Boot App
 # description: Run tests and generate coverage report for a Spring Boot application in an artifact.
-name: Build Spring Boot App
-# description: Build a Spring Boot application and generate a JAR artifact.
 
 on:
   workflow_call:
