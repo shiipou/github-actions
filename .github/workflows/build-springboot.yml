@@ -9,10 +9,6 @@ on:
         description: 'Current Working directory (Useful for mono-repo)'
         required: false
         default: '.'
-      version:
-        type: string
-        description: 'Version to build'
-        required: true
       java-version:
         type: string
         description: 'Version of Java to use'
@@ -57,7 +53,7 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        run: gradle build -P version=${{ inputs.version }} -x test
+        run: gradle build -x test
 
       - name: Upload build artifacts
         if: inputs.artifact-name != '' && inputs.artifact-path != ''
