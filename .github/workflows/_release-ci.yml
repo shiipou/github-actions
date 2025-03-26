@@ -15,12 +15,13 @@ jobs:
   get-version:
     uses: shiipou/github-actions/.github/workflows/get-version.yml@main
     with:
-      prerelease-branches: "^(rc|beta|alpha)$"
+      changelog-include-hidden-sections: true
+      
   release:
     needs: get-version
-    if: ${{ needs.get-version.outputs.will-release }}
-    uses: shiipou/github-actions/.github/workflows/release.yml@main
+    if: ${{ needs.get-version.outputs.version != '' }}
+    uses: shiipou/github-actions/.github/workflows/upsert-release.yml@main
     with:
       version: ${{ needs.get-version.outputs.version }}
-      changelogs: ${{ needs.get-version.outputs.changelogs }}
-      is-prerelease: ${{ needs.get-version.outputs.is-prerelease }}
+      changelog: ${{ needs.get-version.outputs.changelog }}
+      prerelease: ${{ needs.get-version.outputs.channel != '' }}
