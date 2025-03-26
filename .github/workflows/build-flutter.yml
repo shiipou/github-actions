@@ -64,10 +64,6 @@ on:
       UPLOAD_STORE_PASSWORD:
         description: 'Password for the Android keystore'
         required: false
-    outputs:
-      artifact-name: 
-        description: 'Name of the artifact produced by the flutter build'
-        value: ${{ jobs.build.outputs.artifact-name }}
 
 jobs:
   build:
@@ -75,8 +71,6 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     runs-on: ${{ inputs.runner }}
-    outputs:
-      artifact-name: ${{ steps.build.outputs.artifact-name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
