@@ -45,13 +45,11 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     
     steps:
-      - run: |
-          if [ -n "${{ inputs.envs }}" ] ; then
-            echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
-          fi
-          if [ -n "${{ secrets.envs }}" ] ; then
-            echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
-          fi
+      - if: inputs.envs != ''
+        run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
+      - if: secrets.envs != ''
+        run: echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
       
       - name: Set up JDK
