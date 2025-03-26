@@ -14,8 +14,6 @@ permissions:
 jobs:
   get-version:
     uses: shiipou/github-actions/.github/workflows/get-version.yml@main
-    with:
-      changelog-include-hidden-sections: true
       
   release:
     needs: get-version
