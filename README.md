@@ -26,7 +26,7 @@ jobs:
     
   build:
     needs: version
-    if: needs.get-version.outputs.version != ''
+    if: needs.version.outputs.version != ''
     uses: shiipou/github-actions/.github/workflows/build-springboot.yml@main
     with:
       version: ${{ needs.version.outputs.version }}
