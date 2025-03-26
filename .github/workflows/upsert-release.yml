@@ -82,7 +82,7 @@ jobs:
           if [ -n "${{ inputs.with-artifact-path }}" ]; then
             IFS=',' read -r -a artifacts <<< "${{ inputs.with-artifact-path }}"
             artifacts_arg="artifacts/${artifacts[@]}"
-            gh release upload "${{ inputs.version }}" $artifacts_arg --clobber --repo ${{ github.repository }}
+            gh release upload "v${{ inputs.version }}" $artifacts_arg --clobber --repo ${{ github.repository }}
           else
             echo "No artifact to upload"
           fi
