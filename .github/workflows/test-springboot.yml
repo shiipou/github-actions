@@ -35,7 +35,19 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
-    
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: app
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +59,10 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
+        env:
+          DATABASE_URL: postgresql://localhost:5432/app
+          DATABASE_USER: app
+          DATABASE_PASSWORD: app
         run: gradle test
 
       - name: Upload build artifacts
