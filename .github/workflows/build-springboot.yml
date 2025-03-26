@@ -45,10 +45,11 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     
     steps:
-      - run: echo "${{ inputs.envs }}" >> "$GITHUB_ENV"
-      - run: echo "${{ secrets.envs }}" >> "$GITHUB_ENV"
-
       - uses: actions/checkout@v4
+
+      
+      - run: echo "${{ inputs.envs }}" >> .env
+      - run: echo "${{ secrets.envs }}" >> .env
       
       - name: Set up JDK
         uses: actions/setup-java@v4
