@@ -28,6 +28,11 @@ on:
         description: 'Include hidden sections in the changelog'
         required: false
         default: false
+      force:
+        type: boolean
+        description: Force the workflow to generate a version number even if it already exist or didn't match the branches rules.
+        required: false
+        default: false
     outputs:
       version:
         description: 'The calculated version'
@@ -66,17 +71,26 @@ jobs:
           IFS="," read -ra release_branches <<< "${{ inputs.release-branch }}"
           current_branch="${{ github.ref_name }}"
           must_release=false
-          if [[ "$IFS${prerelease_branches[*]}$IFS" =~ "$IFS${current_branch}$IFS" ]] ; then
+          if [[ " ${prerelease_branches[*]} " =~ " ${current_branch} " ]] ; then
             must_release=true
             prerelease_args="--prerelease ${current_branch}"
             channel=${current_branch}
-          elif [[ "$IFS${release_branches[*]}$IFS" =~ "$IFS${current_branch}$IFS" ]]; then
+          elif [[ " ${release_branches[*]} " =~ " ${current_branch} " ]]; then
+            must_release=true
+          elif ${{ inputs.force }} ; then
+            echo "Event not hit release_branch or prerelease_branches, but force is set to True."
             must_release=true
           fi
+          
           if ${must_release} ; then
             VERSION=$(convco version -b $prerelease_args)
             echo "Determined version: ${VERSION}"
-            tag="$(git tag --list $VERSION)"
+            tag="$(git tag --list v$VERSION)"
+            if ${{ inputs.force }} ; then
+              echo "Version already exist, but force is set to True."
+              tag=""
+            fi
+            
             if [ -z "$tag" ] ; then
               if ${{ inputs.changelog-include-hidden-sections }} ; then
                 hidden_args="--include-hidden-sections"
