@@ -17,9 +17,9 @@ on:
         description: 'Whenever or not to produce a pre-release'
         required: false
         default: false
-      with-artifact-name:
+      with-artifacts:
         type: string
-        description: 'Identifier for the build artifact (e.g., android-aab or ios-ipa)'
+        description: 'IDs of the artifacts to download, comma-separated.'
         required: false
       with-artifact-path:
         type: string
@@ -55,7 +55,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.with-artifact-name }}
+          artifact-ids: ${{ inputs.with-artifacts }}
           path: artifacts/
           merge-multiple: true
 
@@ -63,7 +63,7 @@ jobs:
         if: steps.check_release.outputs.exists == 'false'
         run: |
           artifact_arg=''
-          if [ -n "${{ inputs.artifact-path }}" ]; then
+          if [ -n "${{ inputs.with-artifact-path }}" ]; then
             artifact_arg="artifacts/${{ inputs.with-artifact-path }}"
           fi
           
