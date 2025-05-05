@@ -95,7 +95,7 @@ jobs:
               if ${{ inputs.changelog-include-hidden-sections }} ; then
                 hidden_args="--include-hidden-sections"
               fi
-              CHANGELOG=$(convco changelog $hidden_args -u $VERSION)
+              CHANGELOG=$(convco changelog -m1 $hidden_args -u $VERSION)
               echo "version=${VERSION}" >> $GITHUB_OUTPUT
               if [ -n "${channel}" ]; then
                 echo "channel=${channel}" >> $GITHUB_OUTPUT
