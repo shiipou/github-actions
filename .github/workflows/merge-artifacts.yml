@@ -1,0 +1,63 @@
+name: Merge Artifacts Workflow
+
+on:
+  workflow_call:
+    inputs:
+      with-artifacts-names:
+        description: 'Comma-separated list of artifact names to merge'
+        required: true
+        type: string
+      artifact-name:
+        description: 'Name of the final merged artifact'
+        required: true
+        type: string
+      zip-artifacts:
+        description: 'Whether to zip the merged artifacts'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  merge-artifacts:
+    name: Merge Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download and merge artifacts
+        env:
+          ZIP_ARTIFACTS: ${{ inputs.zip-artifacts }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts > artifacts.json
+            
+          mkdir -p artifacts
+          mkdir -p downloads
+          IFS="," read -ra artifacts_names <<< "${{ inputs.with-artifacts-names }}"
+          for i in "${!artifacts_names[@]}"; do
+            artifact_name=${artifacts_names[$i]}
+            artifact_path=artifacts/${artifact_name}
+            download_url=$(jq -r --arg artifact_name "$artifact_name" '.artifacts[] | select(.name == $artifact_name) | .archive_download_url' artifacts.json)
+            if [ -n "$download_url" ]; then
+              echo "Downloading artifact: $artifact_name to $artifact_path"
+              mkdir -p "$artifact_path"
+              curl -L -o "downloads/$artifact_name.zip" -H "Authorization: Bearer ${GH_TOKEN}" "$download_url"
+              if [[ "${ZIP_ARTIFACTS}" = "true" ]]; then
+                mv "downloads/$artifact_name.zip" "$artifact_path/$artifact_name.zip"
+              else
+                unzip -o "$artifact_path/$artifact_name.zip" -d "$artifact_path"
+                rm -f "downloads/$artifact_name.zip"
+              fi
+            else
+              echo "Artifact $artifact_name not found"
+            fi
+          done
+
+      - name: Upload merged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: artifacts/*
