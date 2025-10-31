@@ -60,7 +60,7 @@ jobs:
       - name: Determine version using convco CLI
         id: get_version
         run: |
-          CONVCO_CMD="docker run -iT --rm -v $PWD:/workspace -u $UID convco/convco:latest"
+          CONVCO_CMD="docker run -i --rm -v $PWD:/workspace -u $UID convco/convco:latest"
           if [[ -n "${{ inputs.path }}" ]]; then
             echo "Using path: ${{ inputs.path }}"
             path_args="--path ${{ inputs.path }}"
